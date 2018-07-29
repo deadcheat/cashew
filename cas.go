@@ -11,5 +11,11 @@ type Deliver interface {
 
 // UseCase define behaviors for Cas Server
 type UseCase interface {
+	ValidateTicket(id string) error
 	Login() error
+}
+
+// TicketRepository repository for ticket
+type TicketRepository interface {
+	Find(id string) (*Ticket, error)
 }
