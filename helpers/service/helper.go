@@ -6,15 +6,21 @@ import (
 	"github.com/PuerkitoBio/purell"
 )
 
+// NormalizeURL normalize url and unescape
 func NormalizeURL(u string) (string, error) {
-	urlStr, err := url.QueryUnescape(u)
+	urlVal, err := url.Parse(u)
 	if err != nil {
 		return u, err
 	}
-	urlStr, err = purell.NormalizeURLString(urlStr, purell.FlagRemoveTrailingSlash|purell.FlagRemoveDuplicateSlashes|purell.FlagRemoveEmptyQuerySeparator|purell.FlagRemoveEmptyPortSeparator|purell.FlagRemoveDirectoryIndex|purell.FlagRemoveDotSegments|purell.FlagRemoveFragment)
-	urlVal, err := url.Parse(urlStr)
+	urlVal.RawQuery = urlVal.Query().Encode()
+
+	urlStr, err := url.QueryUnescape(urlVal.String())
 	if err != nil {
 		return u, err
 	}
-	return urlVal.String(), nil
+	urlStr, err = purell.NormalizeURLString(urlStr, purell.FlagsAllGreedy)
+	if err != nil {
+		return u, err
+	}
+	return urlStr, nil
 }
