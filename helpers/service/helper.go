@@ -8,19 +8,17 @@ import (
 
 // NormalizeURL normalize url and unescape
 func NormalizeURL(u string) (string, error) {
-	urlVal, err := url.Parse(u)
+	urlStr, err := url.QueryUnescape(u)
 	if err != nil {
-		return u, err
+		return "", err
 	}
+	// fmt.Println(urlStr)
+	urlVal, err := url.Parse(urlStr)
+	if err != nil {
+		return "", err
+	}
+	// fmt.Printf("%#v", urlVal)
 	urlVal.RawQuery = urlVal.Query().Encode()
 
-	urlStr, err := url.QueryUnescape(urlVal.String())
-	if err != nil {
-		return u, err
-	}
-	urlStr, err = purell.NormalizeURLString(urlStr, purell.FlagsAllGreedy)
-	if err != nil {
-		return u, err
-	}
-	return urlStr, nil
+	return purell.NormalizeURL(urlVal, purell.FlagsAllGreedy), nil
 }
