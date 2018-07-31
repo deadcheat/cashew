@@ -14,22 +14,40 @@ func TestNormalizeURL(t *testing.T) {
 	}{
 		// TODO: Add test cases.
 		{
-			name:    "http://google.com?ticket=12345",
-			args:    args{u: "http://google.com?ticket=12345"},
-			want:    "http://google.com?ticket=12345",
+			name:    "remove trailing ? for http://example.com?",
+			args:    args{u: "http://example.com?"},
+			want:    "http://example.com",
 			wantErr: false,
 		},
 		{
-			name:    "http://google.com/?ticket=12345&",
-			args:    args{u: "http://google.com/?ticket=12345&"},
-			want:    "http://google.com?ticket=12345",
+			name:    "remove trailing / for http://example.com/",
+			args:    args{u: "http://example.com/"},
+			want:    "http://example.com",
 			wantErr: false,
 		},
 		{
-			name:    "http%3A%2F%2Fgoogle.com%2F%3Fticket%3D12345",
-			args:    args{u: "http%3A%2F%2Fgoogle.com%2F%3Fticket%3D12345"},
-			want:    "http://google.com?ticket=12345",
+			name:    "remove trailingslash last '&' in query params for \"http://example.com/?ticket=12345&\"",
+			args:    args{u: "http://example.com/?ticket=12345&"},
+			want:    "http://example.com?ticket=12345",
 			wantErr: false,
+		},
+		{
+			name:    "unexcape query and url for \"http%3A%2F%2Fexample.com%2F%3Fticket%3D12345\"",
+			args:    args{u: "http%3A%2F%2Fexample.com%2F%3Fticket%3D12345"},
+			want:    "http://example.com?ticket=12345",
+			wantErr: false,
+		},
+		{
+			name:    "return escape error for \"%\"",
+			args:    args{u: "http://%"},
+			want:    "",
+			wantErr: true,
+		},
+		{
+			name:    "parse error",
+			args:    args{u: "://"},
+			want:    "",
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
