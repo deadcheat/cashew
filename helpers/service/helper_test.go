@@ -49,6 +49,12 @@ func TestNormalizeURL(t *testing.T) {
 			want:    "",
 			wantErr: true,
 		},
+		{
+			name:    "do not parse when blank",
+			args:    args{u: "  "},
+			want:    "",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
