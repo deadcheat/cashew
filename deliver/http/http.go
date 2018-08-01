@@ -4,7 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"strings"
+	"strconv"
 	"time"
 
 	"github.com/deadcheat/cashew/assets"
@@ -50,7 +50,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	for _, v := range renews {
-		if v == "1" || strings.ToUpper(v) == "TRUE" {
+		if b, _ := strconv.ParseBool(v); b {
 			LoginPage(w)
 			return
 		}
@@ -58,8 +58,9 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	gateways := params[consts.ParamKeyGateway]
 	gateway := false
 	for _, v := range gateways {
-		if v == "1" || strings.ToUpper(v) == "TRUE" {
-			gateway = true
+		if b, _ := strconv.ParseBool(v); b {
+			http.Redirect(w, r, svc, http.StatusSeeOther)
+			return
 		}
 	}
 	var tgt *http.Cookie
