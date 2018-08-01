@@ -14,6 +14,12 @@
   revision = "de5bf2ad457846296e2031421a34e2568e304e35"
 
 [[projects]]
+  name = "github.com/deadcheat/goblet"
+  packages = ["."]
+  revision = "889e27ca4ae2be01d23184e77c28b5c804ca5d32"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/gorilla/context"
   packages = ["."]
   revision = "08b5f424b9271eedf6f9f0ce86cb9396ed337a42"
@@ -56,6 +62,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f858c5f99dd46c4b9d3367f8f790d844534f186c7b0cec2976e752af3c912571"
+  inputs-digest = "646780fa7d51891d9651fffd9ec70faa66686ffabf1afb62d2715527d4796917"
   solver-name = "gps-cdcl"
   solver-version = 1

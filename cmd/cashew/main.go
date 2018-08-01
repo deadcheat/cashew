@@ -12,5 +12,6 @@ func main() {
 	r := mux.NewRouter()
 	d := dh.New(r)
 	d.Mount()
+	log.Println("start cas server")
 	log.Fatal(http.ListenAndServe(":3000", r))
 }

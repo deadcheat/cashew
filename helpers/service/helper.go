@@ -2,12 +2,16 @@ package service
 
 import (
 	"net/url"
+	"strings"
 
 	"github.com/PuerkitoBio/purell"
 )
 
-// NormalizeURL normalize url and unescape
+// NormalizeURL normalize and unescape url
 func NormalizeURL(u string) (string, error) {
+	if len(strings.Replace(u, " ", "", -1)) == 0 {
+		return "", nil
+	}
 	urlStr, err := url.QueryUnescape(u)
 	if err != nil {
 		return "", err
