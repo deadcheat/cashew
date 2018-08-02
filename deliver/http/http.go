@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -37,7 +38,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 
 	params := r.URL.Query()
 	services := params[consts.ParamKeyService]
-	svc := ""
+	var svc *url.URL
 	if len(services) > 0 {
 		// enable only first url
 		svc, err = service.NormalizeURL(services[0])
@@ -58,7 +59,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	gateways := params[consts.ParamKeyGateway]
 	for _, v := range gateways {
 		if b, _ := strconv.ParseBool(v); b {
-			http.Redirect(w, r, svc, http.StatusSeeOther)
+			http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 			return
 		}
 	}
@@ -70,10 +71,14 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err = d.uc.ValidateTicket(tgt.Value); err == nil && svc != "" {
+	// redirect service with service ticket when tgt ticket is valid
+	if err = d.uc.ValidateTicket(tgt.Value); err == nil && svc != nil {
 		st := d.uc.ServiceTicket()
+		q := svc.Query()
+		q.Add("ticket", st.ID)
+		svc.RawQuery = q.Encode()
 		// if ticket is valid, redirect to service
-		http.Redirect(w, r, svc, http.StatusSeeOther)
+		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
 	}
 
