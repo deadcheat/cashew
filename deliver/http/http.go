@@ -51,12 +51,11 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	renews := params[consts.ParamKeyRenew]
 	for _, v := range renews {
 		if b, _ := strconv.ParseBool(v); b {
-			LoginPage(w)
+			loginPage(w)
 			return
 		}
 	}
 	gateways := params[consts.ParamKeyGateway]
-	gateway := false
 	for _, v := range gateways {
 		if b, _ := strconv.ParseBool(v); b {
 			http.Redirect(w, r, svc, http.StatusSeeOther)
@@ -71,11 +70,8 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if gateway {
-
-	}
-
 	if err = d.uc.ValidateTicket(tgt.Value); err == nil && svc != "" {
+		st := d.uc.ServiceTicket()
 		// if ticket is valid, redirect to service
 		http.Redirect(w, r, svc, http.StatusSeeOther)
 		return
@@ -84,7 +80,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	log.Println("GETlogin")
 }
 
-func LoginPage(w http.ResponseWriter) {
+func loginPage(w http.ResponseWriter) {
 	t := template.New("cas login")
 	f, err := assets.Assets.File("/templates/login/index.html")
 	if err != nil {

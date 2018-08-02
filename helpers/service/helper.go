@@ -8,21 +8,20 @@ import (
 )
 
 // NormalizeURL normalize and unescape url
-func NormalizeURL(u string) (string, error) {
+func NormalizeURL(u string) (*url.URL, error) {
 	if len(strings.Replace(u, " ", "", -1)) == 0 {
-		return "", nil
+		return nil, nil
 	}
 	urlStr, err := url.QueryUnescape(u)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// fmt.Println(urlStr)
 	urlVal, err := url.Parse(urlStr)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	// fmt.Printf("%#v", urlVal)
 	urlVal.RawQuery = urlVal.Query().Encode()
-
-	return purell.NormalizeURL(urlVal, purell.FlagsAllGreedy), nil
+	return url.Parse(purell.NormalizeURL(urlVal, purell.FlagsAllGreedy))
 }
