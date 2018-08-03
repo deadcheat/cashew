@@ -8,14 +8,15 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/assets"
 	"github.com/deadcheat/cashew/helpers/service"
 	"github.com/deadcheat/cashew/values/consts"
 
-	"github.com/deadcheat/cashew"
 	"github.com/gorilla/mux"
 )
 
+// Deliver struct implements cashew.Deliver
 type Deliver struct {
 	r  *mux.Router
 	uc cashew.UseCase

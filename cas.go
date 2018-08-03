@@ -21,3 +21,7 @@ type TicketRepository interface {
 	Find(id string) (*Ticket, error)
 	Create(*Ticket) error
 }
+
+// Authenticator interface for authenticate
+type Authenticator interface {
+}
