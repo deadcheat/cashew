@@ -19,7 +19,7 @@ import (
 // Deliver struct implements cashew.Deliver
 type Deliver struct {
 	r  *mux.Router
-	uc cashew.UseCase
+	uc cashew.LoginUseCase
 }
 
 // New make new Deliver
@@ -73,8 +73,13 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// redirect service with service ticket when tgt ticket is valid
-	if err = d.uc.ValidateTicket(tgt.Value); err == nil && svc != nil {
-		st := d.uc.ServiceTicket()
+	if err = d.uc.ValidateTicket(consts.TicketTypeService, tgt.Value); err == nil && svc != nil {
+		st, err := d.uc.ServiceTicket(svc.String())
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+			return
+		}
 		q := svc.Query()
 		q.Add("ticket", st.ID)
 		svc.RawQuery = q.Encode()

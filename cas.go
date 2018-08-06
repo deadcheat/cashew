@@ -1,6 +1,8 @@
 package cashew
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Deliver delivery interface
 type Deliver interface {
@@ -9,19 +11,25 @@ type Deliver interface {
 	PostLogin(w http.ResponseWriter, r *http.Request)
 }
 
-// UseCase define behaviors for Cas Server
-type UseCase interface {
-	ValidateTicket(id string) error
-	ServiceTicket() *Ticket
+// LoginUseCase define behaviors for Cas Server
+type LoginUseCase interface {
+	ValidateTicket(ticketType TicketType, id string) error
+	ServiceTicket(service string) (*Ticket, error)
 	Login() error
 }
 
 // TicketRepository repository for ticket
 type TicketRepository interface {
-	Find(id string) (*Ticket, error)
+	Issue(t TicketType) (*Ticket, error)
+	Find(t TicketType, id string) (*Ticket, error)
 	Create(*Ticket) error
 }
 
-// Authenticator interface for authenticate
-type Authenticator interface {
+// AuthenticateUseCase interface for authenticate
+type AuthenticateUseCase interface {
+	Authenticate(id, pass string) error
+}
+
+type AuthenticatedUserRepository interface {
+	Find(id, pass string) error
 }
