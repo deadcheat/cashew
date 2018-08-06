@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	dh "github.com/deadcheat/cashew/deliver/http"
+	ld "github.com/deadcheat/cashew/deliver/login"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/gorilla/mux"
 )
@@ -20,8 +20,8 @@ func main() {
 
 	// create usecase, repository, deliver and mount them
 	r := mux.NewRouter()
-	d := dh.New(r)
-	d.Mount()
+	login := ld.New(r)
+	login.Mount()
 
 	// start cas server
 	log.Println("start cas server")
