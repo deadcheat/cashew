@@ -28,7 +28,7 @@ func TestLoad(t *testing.T) {
 		Host:        "localhost",
 		Port:        3000,
 		URIPath:     "/cas",
-		Database: setting.Database{
+		Database: &setting.Database{
 			Driver: "mysql",
 			Name:   "casdb",
 			User:   "casuser",
@@ -36,7 +36,7 @@ func TestLoad(t *testing.T) {
 			Host:   "localhost",
 			Port:   3306,
 		},
-		Authenticator: setting.Authenticator{
+		Authenticator: &setting.Authenticator{
 			Driver: "database",
 			AuthDatabase: &setting.AuthDatabase{
 				Driver:      "mysql",
@@ -51,7 +51,8 @@ func TestLoad(t *testing.T) {
 			},
 			LDAP: nil,
 		},
-		Logging: setting.Logging{
+		Logging: &setting.Logging{
+			Driver:   "file",
 			FileName: "casserver.log",
 			LogLevel: "debug",
 		},

@@ -18,13 +18,13 @@ type App struct {
 	URIPath string `yaml:"uri_path"`
 
 	// Database Setting
-	Database `yaml:"database"`
+	*Database `yaml:"database"`
 
 	// Authenticate Setting
-	Authenticator `yaml:"authenticator"`
+	*Authenticator `yaml:"authenticator"`
 
 	// Logging Setting
-	Logging `yaml:"logging"`
+	*Logging `yaml:"logging"`
 }
 
 // Database struct of database setting
@@ -70,6 +70,25 @@ type LDAP struct {
 
 // Logging struct for logging setting
 type Logging struct {
+	Driver   string `yaml:"driver"`
 	FileName string `yaml:"file"`
 	LogLevel string `yaml:"level"`
 }
+
+var (
+	// DefaultSetting default values for this
+	DefaultSetting = App{
+		UseSSL:        false,
+		SSLCertFile:   "",
+		SSLCertKey:    "",
+		Host:          "127.0.0.1",
+		Port:          3000,
+		URIPath:       "",
+		Database:      nil,
+		Authenticator: nil,
+		Logging: &Logging{
+			Driver:   "stdout",
+			LogLevel: "debug",
+		},
+	}
+)
