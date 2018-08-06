@@ -26,8 +26,8 @@ func (l *Loader) Load(id string) (a *setting.App, err error) {
 
 	// ioutil.ReadAll may not return error when file exists
 	b, _ := ioutil.ReadAll(file)
-
-	a = new(setting.App)
+	sc := setting.DefaultSetting
+	a = &sc
 	if err := yaml.Unmarshal(b, a); err != nil {
 		return nil, err
 	}

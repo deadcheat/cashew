@@ -1,0 +1,44 @@
+### SSL Settings
+### If you use SSL certificate, first of all, set ssl setting below true
+ssl: false
+### then, uncomment ssl_cert and ssl_key
+# ssl_cert: /path/to/your/ssl.pem
+# ssl_key: /path/to/your/private_key.pem
+
+### Server Settings
+### specify host and port that cas server run
+host: 127.0.0.1
+port: 3000
+
+### specify uri_path if you want to change the root path
+### cas server will be served
+# uri_path: /cas
+
+### Database Setting
+### Set up the database connection
+### NOTE: This doesn't work correctly yet.
+# database:
+#   driver: mysql
+#   name: casdb
+#   user: casuser
+#   pass: password
+#   host: localhost
+#   port: 3306
+
+### Authenticator Setting
+### NOTE: This doesn't work correctly yet.
+# authenticator:
+#   driver: database
+#   database:
+#     driver: mysql
+#     name: roledb
+#     user: roleuser
+#     pass: rolepass
+#     host: localhost
+#     port: 3306
+
+### Log Setting
+### NOTE: This doesn't work correctly yet.
+# logging:
+#   driver: stdout
+#   level: debug

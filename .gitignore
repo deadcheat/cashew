@@ -12,3 +12,6 @@
 *.out
 
 vendor/
+
+# ignore local config file
+.config.yml
