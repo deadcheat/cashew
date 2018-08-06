@@ -1,7 +1,12 @@
-package app
+package setting
 
-// Setting struct of application setting
-type Setting struct {
+// Loader config load interface
+type Loader interface {
+	Load(id string) (*App, error)
+}
+
+// App struct of application setting
+type App struct {
 	// Server Setting
 	UseSSL      bool   `yaml:"ssl"`
 	SSLCertFile string `yaml:"ssl_cert"`

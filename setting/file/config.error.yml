@@ -1,0 +1,22 @@
+ssl: false
+
+host: "localhost"
+port: 3000
+
+uri_path: "/cas"
+
+database: 1
+
+authenticator:
+  driver: "database"
+  database:
+    driver: "mysql"
+    name: "roledb"
+    user: "roleuser"
+    pass: "rolepass"
+    host: "localhost"
+    port: 3306
+
+logging:
+  file: "casserver.log"
+  level: "debug"
