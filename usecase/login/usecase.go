@@ -2,9 +2,9 @@ package login
 
 import (
 	"errors"
-	"time"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/timer"
 	"github.com/deadcheat/cashew/values/consts"
 )
 
@@ -25,7 +25,7 @@ func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) error {
 		return err
 	}
 	// TODO fix to use interfaced timer
-	if ticket.ExpiredAt.Before(time.Now()) {
+	if ticket.ExpiredAt.Before(timer.Local.Now()) {
 		// TODO define this error in values package
 		return errors.New("ticket has already been expired")
 	}
