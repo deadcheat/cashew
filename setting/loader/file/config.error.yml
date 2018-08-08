@@ -9,13 +9,18 @@ database: 1
 
 authenticator:
   driver: "database"
-  database:
-    driver: "mysql"
-    name: "roledb"
-    user: "roleuser"
-    pass: "rolepass"
-    host: "localhost"
-    port: 3306
+  dbauth:
+    database:
+      driver: "mysql"
+      name: "roledb"
+      user: "roleuser"
+      pass: "rolepass"
+      host: "localhost"
+      port: 3306
+    table: auth
+    user_name_key: admin
+    password_key: password
+
 
 logging:
   file: "casserver.log"
