@@ -5,9 +5,23 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/deadcheat/cashew/database"
+
 	// do blank import on this line
 	_ "github.com/go-sql-driver/mysql"
 )
+
+// New return new connector
+func New(n, u, p, h string, po int, params map[string]string) database.Connector {
+	return &Connector{
+		Name:   n,
+		User:   u,
+		Pass:   p,
+		Host:   h,
+		Port:   po,
+		Params: params,
+	}
+}
 
 // Connector interface implements
 type Connector struct {
@@ -22,7 +36,6 @@ type Connector struct {
 // Open connection
 func (c *Connector) Open() (*sql.DB, error) {
 	params := url.Values{}
-	params.Add("parseTime", "true")
 	for k, v := range c.Params {
 		params.Add(k, v)
 	}

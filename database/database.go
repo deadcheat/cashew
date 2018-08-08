@@ -1,6 +1,8 @@
-package db
+package database
 
-import "database/sql"
+import (
+	"database/sql"
+)
 
 // Connector database connector interface
 type Connector interface {
