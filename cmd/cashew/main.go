@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 
@@ -12,7 +13,9 @@ import (
 func main() {
 	var err error
 	// load setting
-	configFile := "config.yml"
+	var configFile string
+	flag.StringVar(&configFile, "c", "config.yml", "specify config file path")
+	flag.Parse()
 	err = foundation.Load(configFile)
 	if err != nil {
 		log.Fatalf("failed to load config file %s \n", configFile)
