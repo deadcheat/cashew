@@ -30,6 +30,7 @@ type AuthenticateUseCase interface {
 	Authenticate(id, pass string) error
 }
 
+// AuthenticatedUserRepository repository interface for authenticate
 type AuthenticatedUserRepository interface {
 	Find(id, pass string) error
 }
