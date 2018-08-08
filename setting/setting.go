@@ -40,18 +40,13 @@ type Database struct {
 // Authenticator struct of authenticator setting
 type Authenticator struct {
 	Driver        string `yaml:"driver"`
-	*AuthDatabase `yaml:"database"`
-	*LDAP         `yaml:"ldap"`
+	*AuthDatabase `yaml:"dbauth"`
+	*LDAP         `yaml:"ldapauth"`
 }
 
 // AuthDatabase struct of database setting
 type AuthDatabase struct {
-	Driver      string `yaml:"driver"`
-	Name        string `yaml:"name"`
-	User        string `yaml:"user"`
-	Pass        string `yaml:"pass"`
-	Host        string `yaml:"host"`
-	Port        int    `yaml:"port"`
+	*Database   `yaml:"database"`
 	Table       string `yaml:"table"`
 	UserNameKey string `yaml:"user_name_key"`
 	PasswordKey string `yaml:"password_key"`
