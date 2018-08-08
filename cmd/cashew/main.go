@@ -10,12 +10,17 @@ import (
 )
 
 func main() {
-	// load global setting
-	l := foundation.GlobalSettingLoader()
+	var err error
+	// load setting
 	configFile := "config.yml"
-	_, err := l.Load(configFile)
+	err = foundation.Load(configFile)
 	if err != nil {
 		log.Fatalf("failed to load config file %s \n", configFile)
+	}
+	// start database
+	err = foundation.StartDatabase()
+	if err != nil {
+		log.Fatalf("failed to start database %+v \n", err)
 	}
 
 	// create usecase, repository, deliver and mount them
