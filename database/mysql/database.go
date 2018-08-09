@@ -12,13 +12,13 @@ import (
 )
 
 // New return new connector
-func New(n, u, p, h string, po int, params map[string]string) database.Connector {
+func New(name, user, pass, host string, port int, params map[string]string) database.Connector {
 	return &Connector{
-		Name:   n,
-		User:   u,
-		Pass:   p,
-		Host:   h,
-		Port:   po,
+		Name:   name,
+		User:   user,
+		Pass:   pass,
+		Host:   host,
+		Port:   port,
 		Params: params,
 	}
 }
