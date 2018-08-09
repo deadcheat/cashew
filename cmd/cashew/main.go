@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -38,6 +39,7 @@ func main() {
 	login.Mount()
 
 	// start cas server
-	log.Println("start cas server")
-	log.Fatal(http.ListenAndServe(":3000", r))
+	bindAddress := fmt.Sprintf("%s:%d", foundation.App().Host, foundation.App().Port)
+	log.Println("start cas server on ", bindAddress)
+	log.Fatal(http.ListenAndServe(bindAddress, r))
 }
