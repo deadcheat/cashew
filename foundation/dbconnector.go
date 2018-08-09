@@ -2,7 +2,6 @@ package foundation
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"strings"
 
@@ -14,7 +13,7 @@ import (
 // StartDatabase connect database and hold connection globally
 func StartDatabase() (err error) {
 	if app == nil {
-		return errors.New("setting has not been loaded")
+		return ErrSettingHasNotBeenLoaded
 	}
 	db, err = openDB(app.Database)
 	return
