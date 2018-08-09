@@ -26,6 +26,12 @@ func main() {
 		log.Fatalf("failed to start database %+v \n", err)
 	}
 
+	// prepare authenticator
+	err = foundation.PrepareAuthenticator()
+	if err != nil {
+		log.Fatalf("failed to prepare authenticator %+v \n", err)
+	}
+
 	// create usecase, repository, deliver and mount them
 	r := mux.NewRouter()
 	login := ld.New(r)

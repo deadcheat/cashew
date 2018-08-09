@@ -2,6 +2,9 @@ package foundation
 
 import (
 	"database/sql"
+	"errors"
+
+	"github.com/deadcheat/cashew/auth/credential"
 
 	"github.com/deadcheat/cashew/setting"
 )
@@ -14,6 +17,14 @@ var (
 
 	// db global database connection
 	db *sql.DB
+
+	// authenticator hold auth implements
+	authenticator credential.Authenticator
+)
+
+var (
+	// ErrSettingHasNotBeenLoaded setting has not been loaded
+	ErrSettingHasNotBeenLoaded = errors.New("setting has not been loaded")
 )
 
 // SettingLoader access local setting loader from global
