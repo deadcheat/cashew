@@ -1,0 +1,33 @@
+ssl: false
+
+host: localhost
+port: 3000
+
+uri_path: /cas
+
+database:
+  driver: mysql
+  name: casdb
+  user: casuser
+  pass: password
+  host: localhost
+  port: 3306
+
+authenticator:
+  driver: database
+  dbauth:
+    database:
+      driver: mysql
+      name: roledb
+      user: roleuser
+      pass: rolepass
+      host: localhost
+      port: 3306
+    table: auth
+    user_name_key: admin
+    password_key: password
+
+logging:
+  driver: file
+  file: casserver.log
+  level: debug
