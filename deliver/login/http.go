@@ -23,8 +23,8 @@ type Deliver struct {
 }
 
 // New make new Deliver
-func New(r *mux.Router) cashew.Deliver {
-	return &Deliver{r: r}
+func New(r *mux.Router, uc cashew.LoginUseCase) cashew.Deliver {
+	return &Deliver{r: r, uc: uc}
 }
 
 // GetLogin Login by "GET" Method
@@ -73,7 +73,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// redirect service with service ticket when tgt ticket is valid
-	if err = d.uc.ValidateTicket(consts.TicketTypeService, tgt.Value); err == nil && svc != nil {
+	if err = d.uc.ValidateTicket(cashew.TicketTypeService, tgt.Value); err == nil && svc != nil {
 		st, err := d.uc.ServiceTicket(svc.String())
 		if err != nil {
 			log.Println(err)

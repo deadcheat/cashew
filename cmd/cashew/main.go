@@ -6,6 +6,9 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/deadcheat/cashew/repository/ticket"
+	"github.com/deadcheat/cashew/usecase/login"
+
 	ld "github.com/deadcheat/cashew/deliver/login"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/gorilla/mux"
@@ -33,9 +36,13 @@ func main() {
 		log.Fatalf("failed to prepare authenticator %+v \n", err)
 	}
 
-	// create usecase, repository, deliver and mount them
+	// create router
 	r := mux.NewRouter()
-	login := ld.New(r)
+
+	// create usecase, repository, deliver and mount them
+	ticketRepository := ticket.New(foundation.DB())
+	loginUseCase := login.New(ticketRepository)
+	login := ld.New(r, loginUseCase)
 	login.Mount()
 
 	// start cas server
