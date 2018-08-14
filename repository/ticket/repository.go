@@ -48,6 +48,72 @@ func (r *Repository) Create(t *cashew.Ticket) error {
 
 // Find search for new ticket by ticket id
 func (r *Repository) Find(id string) (*cashew.Ticket, error) {
+
+	stmt, err := r.db.Prepare(selectByTicketIDQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRow(id)
+	var (
+		ticket          cashew.Ticket
+		typeStr         sql.NullString
+		service         sql.NullString
+		grantedBy       sql.NullString
+		userName        sql.NullString
+		iou             sql.NullString
+		extraAttributes interface{}
+	)
+	err = row.Scan(
+		&ticket.ID,
+		&typeStr,
+		&ticket.ClientHostName,
+		&ticket.CreatedAt,
+		&ticket.ExpiresAt,
+		&service,
+		&userName,
+		&iou,
+		extraAttributes,
+		&grantedBy,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	if typeStr.Valid {
+		// NullString always return nil as error
+		tmp, _ := typeStr.Value()
+		ticket.Type = cashew.ParseTicketType(tmp.(string))
+	}
+
+	if service.Valid {
+		// NullString always return nil as error
+		tmp, _ := service.Value()
+		ticket.Service = tmp.(string)
+	}
+
+	if iou.Valid {
+		// NullString always return nil as error
+		tmp, _ := iou.Value()
+		ticket.IOU = tmp.(string)
+	}
+
+	if userName.Valid {
+		// NullString always return nil as error
+		tmp, _ := userName.Value()
+		ticket.UserName = tmp.(string)
+	}
+
+	if grantedBy.Valid {
+		tmp, _ := grantedBy.Value()
+		grantedByID, _ := tmp.(string)
+		ticket.GrantedBy, err = r.Find(grantedByID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return nil, nil
 }
 

@@ -90,5 +90,24 @@ func (t TicketType) Prefix() string {
 		return consts.PrefixProxyGrantingTicketIOU
 	}
 	// panic when
-	panic("invalid ticket will be created, don't do that")
+	panic("invalid ticket will be created, don't do that. type : ", t)
+}
+
+func ParseTicketType(s string) TicketType {
+	switch s {
+	case consts.TicketTypeStrLogin:
+		return TicketTypeLogin
+	case consts.TicketTypeStrService:
+		return TicketTypeService
+	case consts.TicketTypeStrProxy:
+		return TicketTypeProxy
+	case consts.TicketTypeStrTicketGranting:
+		return TicketTypeTicketGranting
+	case consts.TicketTypeStrProxyGranting:
+		return TicketTypeProxyGranting
+	case consts.TicketTypeStrProxyGrantingIOU:
+		return TicketTypeProxyGrantingIOU
+	}
+	// panic when
+	panic("invalid ticket was found, it can't be, you've gotta kidding me type:", s)
 }
