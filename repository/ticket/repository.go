@@ -105,6 +105,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		ticket.UserName = tmp.(string)
 	}
 
+	// TODO confirm this recursive call will not cause any problems
 	if grantedBy.Valid {
 		tmp, _ := grantedBy.Value()
 		grantedByID, _ := tmp.(string)
@@ -114,7 +115,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		}
 	}
 
-	return nil, nil
+	return &ticket, nil
 }
 
 type ticketInserter func(tx *sql.Tx, t *cashew.Ticket) error
