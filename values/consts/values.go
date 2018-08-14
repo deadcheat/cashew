@@ -1,7 +1,5 @@
 package consts
 
-import "github.com/deadcheat/cashew"
-
 const (
 	// RFC2822 format of time
 	RFC2822 = "Mon Jan 02 15:04:05 -0700 2006"
@@ -22,16 +20,19 @@ const (
 )
 
 const (
-	// TicketTypeService type of service ticket
-	TicketTypeService cashew.TicketType = iota + 1
-	// TicketTypeProxy type of proxy ticket
-	TicketTypeProxy
-	// TicketTypeProxyGranting type of proxy-granting ticket
-	TicketTypeProxyGranting
-	// TicketTypeProxyGrantingIOU type of proxy-granting ticket iou
-	TicketTypeProxyGrantingIOU
-	// TicketTypeLogin type of login ticket
-	TicketTypeLogin
+	// TicketTypeStrService type of service ticket
+	TicketTypeStrService = "service"
+	// TicketTypeStrProxy type of proxy ticket
+	TicketTypeStrProxy = "proxy"
+	// TicketTypeStrTicketGranting type of proxy-granting ticket
+	TicketTypeStrTicketGranting = "ticket_granting_ticket"
+	// TicketTypeStrProxyGranting type of proxy-granting ticket
+	TicketTypeStrProxyGranting = "proxy_granting_ticket"
+	// TicketTypeStrProxyGrantingIOU type of proxy-granting ticket iou
+	// TODO check is this really necessary
+	TicketTypeStrProxyGrantingIOU = "proxy_granting_ticket_iou"
+	// TicketTypeStrLogin type of login ticket
+	TicketTypeStrLogin = "login"
 )
 
 const (

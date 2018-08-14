@@ -20,8 +20,7 @@ type LoginUseCase interface {
 
 // TicketRepository repository for ticket
 type TicketRepository interface {
-	Issue(t TicketType) (*Ticket, error)
-	Find(t TicketType, id string) (*Ticket, error)
+	Find(id string) (*Ticket, error)
 	Create(*Ticket) error
 }
 
