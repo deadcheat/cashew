@@ -1,6 +1,7 @@
 package cashew
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/deadcheat/cashew/values/consts"
@@ -90,9 +91,10 @@ func (t TicketType) Prefix() string {
 		return consts.PrefixProxyGrantingTicketIOU
 	}
 	// panic when
-	panic("invalid ticket will be created, don't do that. type : ", t)
+	panic(fmt.Sprintf("invalid ticket will be created, don't do that. type: %#+v", t))
 }
 
+// ParseTicketType parse to ticket type from string
 func ParseTicketType(s string) TicketType {
 	switch s {
 	case consts.TicketTypeStrLogin:
@@ -109,5 +111,5 @@ func ParseTicketType(s string) TicketType {
 		return TicketTypeProxyGrantingIOU
 	}
 	// panic when
-	panic("invalid ticket was found, it can't be, you've gotta kidding me type:", s)
+	panic(fmt.Sprintf("invalid ticket was found, it can't be, you've gotta kidding me type: %#+v", s))
 }
