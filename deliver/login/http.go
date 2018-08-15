@@ -27,7 +27,7 @@ func New(r *mux.Router, uc cashew.LoginUseCase) cashew.Deliver {
 	return &Deliver{r: r, uc: uc}
 }
 
-// GetLogin Login by "GET" Method
+// GetLogin handle GET request to /login
 func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
@@ -104,10 +104,12 @@ func loginPage(w http.ResponseWriter) {
 	t.Execute(w, nil)
 }
 
+// PostLogin handle post method request to /login
 func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
 	log.Println("PostLogin")
 }
 
+// Mount route with handler
 func (d *Deliver) Mount() {
 	d.r.HandleFunc("/login", d.GetLogin).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.PostLogin).Methods(http.MethodPost)
