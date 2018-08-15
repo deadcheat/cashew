@@ -32,10 +32,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
 
-	// set to be sure that not use cache
-	w.Header().Set("Pragma", "no-cache")
-	w.Header().Set("Cache-Control", "no-store")
-	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
+	setHeaderNoCache(w)
 
 	params := r.URL.Query()
 	services := params[consts.ParamKeyService]
@@ -51,25 +48,21 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
-	for _, v := range renews {
-		if b, _ := strconv.ParseBool(v); b {
-			loginPage(w)
-			return
-		}
+	if stringSliceContainsTrue(renews) {
+		loginPage(w)
+		return
 	}
 	gateways := params[consts.ParamKeyGateway]
-	for _, v := range gateways {
-		if b, _ := strconv.ParseBool(v); b {
-			http.Redirect(w, r, svc.String(), http.StatusSeeOther)
-			return
-		}
+	if stringSliceContainsTrue(gateways) {
+		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
+		return
 	}
+
 	var tgt *http.Cookie
 	tgt, err = r.Cookie(consts.CookieKeyTGT)
 	if err != nil {
 		log.Println(err)
 		tgt = &http.Cookie{}
-		return
 	}
 
 	// redirect service with service ticket when tgt ticket is valid
@@ -91,6 +84,13 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	log.Println("GETlogin")
 }
 
+func setHeaderNoCache(w http.ResponseWriter) {
+	// set to be sure that not use cache
+	w.Header().Set("Pragma", "no-cache")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
+}
+
 func loginPage(w http.ResponseWriter) {
 	t := template.New("cas login")
 	f, err := assets.Assets.File("/templates/login/index.html")
@@ -102,6 +102,16 @@ func loginPage(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
 	t.Execute(w, nil)
+}
+
+func stringSliceContainsTrue(src []string) bool {
+	for _, v := range src {
+		b, err := strconv.ParseBool(v)
+		if err == nil && b {
+			return true
+		}
+	}
+	return false
 }
 
 // PostLogin handle post method request to /login
