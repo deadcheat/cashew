@@ -46,10 +46,23 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+
+	if svc == nil {
+		log.Println("no service detected")
+		svc = new(url.URL)
+	}
+
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
-		loginPage(w, svc)
+		var lt *cashew.Ticket
+		lt, err = d.uc.LoginTicket(r)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to create login ticket", http.StatusInternalServerError)
+			return
+		}
+		loginPage(w, svc, lt.ID)
 		return
 	}
 	gateways := params[consts.ParamKeyGateway]
@@ -69,7 +82,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	var tgt *cashew.Ticket
 	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgc.Value)
 	if err == nil {
-		st, err := d.uc.ServiceTicket(svc.String(), tgt)
+		st, err := d.uc.ServiceTicket(r, svc.String(), tgt)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
@@ -93,7 +106,7 @@ func setHeaderNoCache(w http.ResponseWriter) {
 	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
 }
 
-func loginPage(w http.ResponseWriter, svc *url.URL) {
+func loginPage(w http.ResponseWriter, svc *url.URL, lt string) {
 	t := template.New("cas login")
 	f, err := assets.Assets.File("/templates/login/index.html")
 	if err != nil {
@@ -104,7 +117,8 @@ func loginPage(w http.ResponseWriter, svc *url.URL) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
 	t.Execute(w, map[string]interface{}{
-		"Service": svc.String(),
+		"Service":     svc.String(),
+		"LoginTicket": lt,
 	})
 }
 

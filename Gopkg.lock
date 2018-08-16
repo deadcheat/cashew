@@ -55,6 +55,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/tomasen/realip"
+  packages = ["."]
+  revision = "f0c99a92ddcedd3964a269d23c8e89d9a9229be6"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = ["idna"]
   revision = "aaf60122140d3fcf75376d319f0554393160eb50"
@@ -105,6 +111,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b6c1b961c3d6c32b10de53aee1b02b7c2db81e146b6e8d180d007263ba68eca5"
+  inputs-digest = "906c35d962f25d1302d99dde7936685ea59e45231cb973cd2211620b0e1ae95d"
   solver-name = "gps-cdcl"
   solver-version = 1
