@@ -8,6 +8,7 @@ import (
 
 	"github.com/deadcheat/cashew/repository/ticket"
 	"github.com/deadcheat/cashew/usecase/login"
+	"github.com/go-playground/locales/id"
 
 	ld "github.com/deadcheat/cashew/deliver/login"
 	"github.com/deadcheat/cashew/foundation"
@@ -41,7 +42,8 @@ func main() {
 
 	// create usecase, repository, deliver and mount them
 	ticketRepository := ticket.New(foundation.DB())
-	loginUseCase := login.New(ticketRepository)
+	idRepository := id.New()
+	loginUseCase := login.New(ticketRepository, idRepository)
 	login := ld.New(r, loginUseCase)
 	login.Mount()
 

@@ -30,7 +30,6 @@ var logics = []ticketInserter{
 
 // Create create new ticket
 func (r *Repository) Create(t *cashew.Ticket) error {
-
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err

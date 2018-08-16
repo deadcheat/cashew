@@ -48,7 +48,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
-	if stringSliceContainsTrue(renews) {
+	if svc == nil || stringSliceContainsTrue(renews) {
 		loginPage(w)
 		return
 	}
@@ -58,16 +58,18 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var tgt *http.Cookie
-	tgt, err = r.Cookie(consts.CookieKeyTGT)
+	var tgc *http.Cookie
+	tgc, err = r.Cookie(consts.CookieKeyTGT)
 	if err != nil {
-		log.Println(err)
-		tgt = &http.Cookie{}
+		log.Println("no ticket granting ticket detected ", err)
+		tgc = &http.Cookie{}
 	}
 
 	// redirect service with service ticket when tgt ticket is valid
-	if err = d.uc.ValidateTicket(cashew.TicketTypeService, tgt.Value); err == nil && svc != nil {
-		st, err := d.uc.ServiceTicket(svc.String())
+	var tgt *cashew.Ticket
+	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgc.Value)
+	if err == nil {
+		st, err := d.uc.ServiceTicket(svc.String(), tgt)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
@@ -81,7 +83,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("GETlogin")
+	log.Println("GET login")
 }
 
 func setHeaderNoCache(w http.ResponseWriter) {
@@ -104,6 +106,7 @@ func loginPage(w http.ResponseWriter) {
 	t.Execute(w, nil)
 }
 
+// stringSliceContainsTrue return true when src []string contains any true-bool-string
 func stringSliceContainsTrue(src []string) bool {
 	for _, v := range src {
 		b, err := strconv.ParseBool(v)
@@ -116,7 +119,7 @@ func stringSliceContainsTrue(src []string) bool {
 
 // PostLogin handle post method request to /login
 func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
-	log.Println("PostLogin")
+	log.Println("Post Login")
 }
 
 // Mount route with handler

@@ -1,45 +1,51 @@
 package login
 
 import (
-	"errors"
-
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/timer"
-	"github.com/deadcheat/cashew/values/consts"
+	"github.com/deadcheat/cashew/values/errs"
 )
 
 // UseCase implemented cashew.LoginUseCase
 type UseCase struct {
-	r cashew.TicketRepository
+	r   cashew.TicketRepository
+	idr cashew.IDRepository
 }
 
 // New return new usecase
-func New(r cashew.TicketRepository) cashew.LoginUseCase {
-	return &UseCase{r}
+func New(r cashew.TicketRepository, idr cashew.IDRepository) cashew.LoginUseCase {
+	return &UseCase{r, idr}
 }
 
 // ValidateTicket validate ticket identified id
-func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) error {
-	ticket, err := u.r.Find(t, id)
+func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) (*cashew.Ticket, error) {
+	if id == "" {
+		return errs.ErrNoTicketID
+	}
+	ticket, err := u.r.Find(id)
 	if err != nil {
 		return err
 	}
-	// TODO fix to use interfaced timer
-	if ticket.ExpiredAt.Before(timer.Local.Now()) {
-		// TODO define this error in values package
-		return errors.New("ticket has already been expired")
+
+	if ticket.Type != t {
+		return errs.ErrTicketTypeNotMatched
+	}
+
+	if ticket.ExpiresAt.Before(timer.Local.Now()) {
+		return errs.ErrTicketHasBeenExpired
 	}
 	return nil
 }
 
 // ServiceTicket create new ServiceTicket
-func (u *UseCase) ServiceTicket(service string) (t *cashew.Ticket, err error) {
-	if t, err = u.r.Issue(consts.TicketTypeService); err != nil {
-		return
-	}
+func (u *UseCase) ServiceTicket(service string, tgt *cashew.Ticket) (t *cashew.Ticket, err error) {
+	t.ID = u.idr.Issue(cashew.TicketTypeService)
+	t.Type = cashew.TicketTypeService
 	t.Service = service
+	t.UserName = tgt.UserName
+	t.GrantedBy = tgt
 	if err = u.r.Create(t); err != nil {
-		return nil, err
+		return
 	}
 	return
 }
