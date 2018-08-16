@@ -20,21 +20,21 @@ func New(r cashew.TicketRepository, idr cashew.IDRepository) cashew.LoginUseCase
 // ValidateTicket validate ticket identified id
 func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) (*cashew.Ticket, error) {
 	if id == "" {
-		return errs.ErrNoTicketID
+		return nil, errs.ErrNoTicketID
 	}
 	ticket, err := u.r.Find(id)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if ticket.Type != t {
-		return errs.ErrTicketTypeNotMatched
+		return nil, errs.ErrTicketTypeNotMatched
 	}
 
 	if ticket.ExpiresAt.Before(timer.Local.Now()) {
-		return errs.ErrTicketHasBeenExpired
+		return nil, errs.ErrTicketHasBeenExpired
 	}
-	return nil
+	return ticket, nil
 }
 
 // ServiceTicket create new ServiceTicket
@@ -45,8 +45,9 @@ func (u *UseCase) ServiceTicket(service string, tgt *cashew.Ticket) (t *cashew.T
 	t.UserName = tgt.UserName
 	t.GrantedBy = tgt
 	if err = u.r.Create(t); err != nil {
-		return
+		return nil, err
 	}
+
 	return
 }
 

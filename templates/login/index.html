@@ -87,6 +87,8 @@
                                     <input type="checkbox"> Remember me
                                 </label>
                             </div>
+                            <input type="hidden" name="lt" value="{{ .LoginTicket }}">
+                            <input type="hidden" name="service" value="{{ .Service }}">
                             <button class="button is-block is-info is-large is-fullwidth">Login</button>
                         </form>
                     </div>
@@ -94,7 +96,6 @@
             </div>
         </div>
     </section>
-    <script async type="text/javascript" src="../js/bulma.js"></script>
 </body>
 
 </html>

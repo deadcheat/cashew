@@ -48,8 +48,8 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	}
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
-	if svc == nil || stringSliceContainsTrue(renews) {
-		loginPage(w)
+	if stringSliceContainsTrue(renews) {
+		loginPage(w, svc)
 		return
 	}
 	gateways := params[consts.ParamKeyGateway]
@@ -93,7 +93,7 @@ func setHeaderNoCache(w http.ResponseWriter) {
 	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
 }
 
-func loginPage(w http.ResponseWriter) {
+func loginPage(w http.ResponseWriter, svc *url.URL) {
 	t := template.New("cas login")
 	f, err := assets.Assets.File("/templates/login/index.html")
 	if err != nil {
@@ -103,7 +103,9 @@ func loginPage(w http.ResponseWriter) {
 	t, _ = t.Parse(string(f.Data))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
-	t.Execute(w, nil)
+	t.Execute(w, map[string]interface{}{
+		"Service": svc.String(),
+	})
 }
 
 // stringSliceContainsTrue return true when src []string contains any true-bool-string
