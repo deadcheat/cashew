@@ -20,6 +20,16 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/go-playground/locales"
+  packages = [
+    ".",
+    "currency",
+    "id"
+  ]
+  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
+  version = "v0.12.1"
+
+[[projects]]
   name = "github.com/go-sql-driver/mysql"
   packages = ["."]
   revision = "d523deb1b23d913de5bdada721a6071e71283618"
@@ -38,10 +48,25 @@
   version = "v1.6.2"
 
 [[projects]]
+  name = "github.com/rs/xid"
+  packages = ["."]
+  revision = "2c7e97ce663ff82c49656bca3048df0fdd83c5f9"
+  version = "v1.2.0"
+
+[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["idna"]
-  revision = "a0f8a16cb08c06df97cbdf9c47f4731ba548c33c"
+  revision = "aaf60122140d3fcf75376d319f0554393160eb50"
+
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/sys"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -66,6 +91,12 @@
   version = "v0.3.0"
 
 [[projects]]
+  name = "google.golang.org/appengine"
+  packages = ["cloudsql"]
+  revision = "b1f26356af11148e710935ed1ac8a7f5702c7612"
+  version = "v1.1.0"
+
+[[projects]]
   name = "gopkg.in/yaml.v2"
   packages = ["."]
   revision = "5420a8b6744d3b0345ab293f6fcba19c978f1183"
@@ -74,6 +105,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0f9cb8da9d8166346c33f286ac96d860befbc34f61244ed772491509f5a9fe66"
+  inputs-digest = "b6c1b961c3d6c32b10de53aee1b02b7c2db81e146b6e8d180d007263ba68eca5"
   solver-name = "gps-cdcl"
   solver-version = 1

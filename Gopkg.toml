@@ -44,3 +44,7 @@
 [[constraint]]
   name = "github.com/go-sql-driver/mysql"
   version = "1.4.0"
+
+[[constraint]]
+  name = "github.com/rs/xid"
+  version = "1.2.0"
