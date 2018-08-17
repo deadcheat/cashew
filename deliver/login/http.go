@@ -112,7 +112,14 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Println("GET login")
+	var lt *cashew.Ticket
+	lt, err = d.uc.LoginTicket(r)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to create login ticket", http.StatusInternalServerError)
+		return
+	}
+	return loginPage(w, svc, lt.ID)
 }
 
 func setHeaderNoCache(w http.ResponseWriter) {
