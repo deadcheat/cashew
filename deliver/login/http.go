@@ -1,12 +1,15 @@
 package http
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/assets"
@@ -73,15 +76,18 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 
 	var tgc *http.Cookie
 	tgc, err = r.Cookie(consts.CookieKeyTGT)
+	tgtID := ""
 	if err != nil {
 		log.Println("no ticket granting ticket detected ", err)
-		tgc = &http.Cookie{}
+	} else {
+		tgtID = tgc.Value
 	}
 
 	// redirect service with service ticket when tgt ticket is valid
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgc.Value)
-	if err == nil {
+	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgtID)
+	switch err {
+	case nil:
 		st, err := d.uc.ServiceTicket(r, svc.String(), tgt)
 		if err != nil {
 			log.Println(err)
@@ -93,6 +99,12 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		svc.RawQuery = q.Encode()
 		// if ticket is valid, redirect to service
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
+		return
+	case errs.ErrNoTicketID, errs.ErrTicketHasBeenExpired, errs.ErrTicketTypeNotMatched:
+		log.Println()
+	default:
+		log.Println(err)
+		http.Error(w, fmt.Sprintf("error occurred when validating ticket: %s", tgtID), http.StatusInternalServerError)
 		return
 	}
 
