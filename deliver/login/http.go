@@ -88,6 +88,9 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgtID)
 	switch err {
 	case nil:
+		if svc == nil {
+			// render information that user has already logged in
+		}
 		var st *cashew.Ticket
 		st, err = d.uc.ServiceTicket(r, svc.String(), tgt)
 		if err != nil {
