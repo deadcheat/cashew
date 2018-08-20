@@ -119,7 +119,7 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to create login ticket", http.StatusInternalServerError)
 		return
 	}
-	return loginPage(w, svc, lt.ID)
+	loginPage(w, svc, lt.ID)
 }
 
 func setHeaderNoCache(w http.ResponseWriter) {
