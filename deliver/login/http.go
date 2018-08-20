@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/deadcheat/cashew/values/errs"
@@ -38,16 +39,11 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	setHeaderNoCache(w)
 
 	params := r.URL.Query()
-	services := params[consts.ParamKeyService]
-	var svc *url.URL
-	if len(services) > 0 {
-		// enable only first url
-		svc, err = service.NormalizeURL(services[0])
-		if err != nil {
-			log.Println(err)
-			http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
-			return
-		}
+	svc, err := serviceURL(params)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
+		return
 	}
 
 	if svc == nil {
@@ -129,6 +125,14 @@ func setHeaderNoCache(w http.ResponseWriter) {
 	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
 }
 
+func serviceURL(v url.Values) (*url.URL, error) {
+	services := v[consts.ParamKeyService]
+	serviceURL := firstString(services)
+	// enable only first url
+	// if serviceURL is empty, return nil, nil
+	return service.NormalizeURL(serviceURL)
+}
+
 func loginPage(w http.ResponseWriter, svc *url.URL, lt string) {
 	t := template.New("cas login")
 	f, err := assets.Assets.File("/templates/login/index.html")
@@ -158,6 +162,42 @@ func stringSliceContainsTrue(src []string) bool {
 
 // PostLogin handle post method request to /login
 func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
+	// define error
+	var err error
+
+	setHeaderNoCache(w)
+
+	params := r.URL.Query()
+	svc, err := serviceURL(params)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
+		return
+	}
+
+	if svc == nil {
+		log.Println("no service detected")
+		svc = new(url.URL)
+	}
+
+	// get required parameters
+	u := firstString(params["username"])
+	p := firstString(params["password"])
+	l := firstString(params["lt"])
+
+	u = strings.Trim(u, " ")
+
+	var lt *cashew.Ticket
+	lt, err = d.uc.ValidateTicket(cashew.TicketTypeLogin, l)
+
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "invalid login ticket", http.StatusBadRequest)
+		return
+	}
+
+	log.Println("login with ", u, p, lt.ID)
+
 	log.Println("Post Login")
 }
 
@@ -165,4 +205,11 @@ func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
 func (d *Deliver) Mount() {
 	d.r.HandleFunc("/login", d.GetLogin).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.PostLogin).Methods(http.MethodPost)
+}
+
+func firstString(s []string) string {
+	if len(s) > 0 {
+		return s[0]
+	}
+	return ""
 }
