@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/deadcheat/goblet"
+
 	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
@@ -50,15 +52,12 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
-		var lt *cashew.Ticket
-		lt, err = d.uc.LoginTicket(r)
+		err = d.showLoginPage(w, r, svc)
 		if err != nil {
 			log.Println(err)
-			http.Error(w, "failed to create login ticket", http.StatusInternalServerError)
+			http.Error(w, "failed to show login page", http.StatusInternalServerError)
 			return
 		}
-		loginPage(w, svc, lt.ID)
-		return
 	}
 	gateways := params[consts.ParamKeyGateway]
 	if stringSliceContainsTrue(gateways) {
@@ -105,14 +104,13 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var lt *cashew.Ticket
-	lt, err = d.uc.LoginTicket(r)
+	err = d.showLoginPage(w, r, svc)
 	if err != nil {
 		log.Println(err)
-		http.Error(w, "failed to create login ticket", http.StatusInternalServerError)
+		http.Error(w, "failed to show login page", http.StatusInternalServerError)
 		return
 	}
-	loginPage(w, svc, lt.ID)
+
 }
 
 func setHeaderNoCache(w http.ResponseWriter) {
@@ -130,19 +128,25 @@ func serviceURL(v url.Values) (*url.URL, error) {
 	return service.NormalizeURL(serviceURL)
 }
 
-func loginPage(w http.ResponseWriter, svc *url.URL, lt string) {
-	t := template.New("cas login")
-	f, err := assets.Assets.File("/templates/login/index.html")
+func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL) (err error) {
+	var lt *cashew.Ticket
+	lt, err = d.uc.LoginTicket(r)
 	if err != nil {
-		http.Error(w, "unabled to find template", http.StatusInternalServerError)
 		return
 	}
+	t := template.New("cas login")
+	var f *goblet.File
+	f, err = assets.Assets.File("/templates/login/index.html")
+	if err != nil {
+		return
+	}
+	// FIXME parse process should be done when app start
 	t, _ = t.Parse(string(f.Data))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
-	t.Execute(w, map[string]interface{}{
+	return t.Execute(w, map[string]interface{}{
 		"Service":     svc.String(),
-		"LoginTicket": lt,
+		"LoginTicket": lt.ID,
 	})
 }
 
@@ -226,6 +230,11 @@ func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
 	svc.RawQuery = q.Encode()
 	// if ticket is valid, redirect to service
 	http.Redirect(w, r, svc.String(), http.StatusSeeOther)
+}
+
+// GetLogOut handle get method request to /logout
+func (d *Deliver) GetLogOut(w http.ResponseWriter, r *http.Request) {
+
 }
 
 // Mount route with handler
