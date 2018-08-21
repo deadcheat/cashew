@@ -2,6 +2,7 @@ package login
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/timer"
@@ -41,13 +42,30 @@ func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) (*cashew.Ticket
 }
 
 // ServiceTicket create new ServiceTicket
-func (u *UseCase) ServiceTicket(r *http.Request, service string, tgt *cashew.Ticket) (t *cashew.Ticket, err error) {
+func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.Ticket) (t *cashew.Ticket, err error) {
+	if service == nil {
+		return nil, errs.ErrNoServiceDetected
+	}
 	t.Type = cashew.TicketTypeService
 	t.ID = u.idr.Issue(t.Type)
 	t.ClientHostName = u.chr.Ensure(r)
-	t.Service = service
+	t.Service = service.String()
 	t.UserName = tgt.UserName
 	t.GrantedBy = tgt
+	if err = u.r.Create(t); err != nil {
+		return nil, err
+	}
+
+	return
+}
+
+// TicketGrantingTicket create new ServiceTicket
+func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
+	t.Type = cashew.TicketTypeTicketGranting
+	t.ID = u.idr.Issue(t.Type)
+	t.ClientHostName = u.chr.Ensure(r)
+	t.UserName = username
+	t.ExtraAttributes = extraAttributes
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}

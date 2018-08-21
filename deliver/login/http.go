@@ -22,13 +22,14 @@ import (
 
 // Deliver struct implements cashew.Deliver
 type Deliver struct {
-	r  *mux.Router
-	uc cashew.LoginUseCase
+	r   *mux.Router
+	uc  cashew.LoginUseCase
+	auc cashew.AuthenticateUseCase
 }
 
 // New make new Deliver
-func New(r *mux.Router, uc cashew.LoginUseCase) cashew.Deliver {
-	return &Deliver{r: r, uc: uc}
+func New(r *mux.Router, uc cashew.LoginUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
+	return &Deliver{r: r, uc: uc, auc: auc}
 }
 
 // GetLogin handle GET request to /login
@@ -44,11 +45,6 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		log.Println(err)
 		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
 		return
-	}
-
-	if svc == nil {
-		log.Println("no service detected")
-		svc = new(url.URL)
 	}
 
 	// check renew and if renew, redirect to login page
@@ -72,12 +68,11 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 
 	var tgc *http.Cookie
 	tgc, err = r.Cookie(consts.CookieKeyTGT)
-	tgtID := ""
 	if err != nil {
 		log.Println("no ticket granting ticket detected ", err)
-	} else {
-		tgtID = tgc.Value
+		tgc = new(http.Cookie)
 	}
+	tgtID := tgc.Value
 
 	// redirect service with service ticket when tgt ticket is valid
 	var tgt *cashew.Ticket
@@ -85,10 +80,12 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	switch err {
 	case nil:
 		if svc == nil {
-			// render information that user has already logged in
+			log.Println("already logged in and no service detected")
+			_, _ = fmt.Fprint(w, "you're already logged in and you didn't set an url to be redirected")
+			return
 		}
 		var st *cashew.Ticket
-		st, err = d.uc.ServiceTicket(r, svc.String(), tgt)
+		st, err = d.uc.ServiceTicket(r, svc, tgt)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
@@ -168,16 +165,12 @@ func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
 	setHeaderNoCache(w)
 
 	params := r.URL.Query()
-	svc, err := serviceURL(params)
+	var svc *url.URL
+	svc, err = serviceURL(params)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
 		return
-	}
-
-	if svc == nil {
-		log.Println("no service detected")
-		svc = new(url.URL)
 	}
 
 	// get required parameters
@@ -195,10 +188,44 @@ func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid login ticket", http.StatusBadRequest)
 		return
 	}
+	// FIXME use lt (it should be deleted)
+	_ = lt
 
-	log.Println("login with ", u, p, lt.ID)
+	// authenticate
+	if err = d.auc.Authenticate(u, p); err != nil {
+		log.Println(err)
+		// FIXME to show error message to loginpage
+		http.Error(w, "invalid login ticket", http.StatusUnauthorized)
+		return
+	}
+	var tgt *cashew.Ticket
+	tgt, err = d.uc.TicketGrantingTicket(r, u, struct{}{})
+	if err != nil {
+		log.Println(err)
+		// FIXME to show error message to loginpage
+		http.Error(w, "failed to issue ticket granting ticket", http.StatusBadRequest)
+		return
+	}
+	// set cookie
+	http.SetCookie(w, &http.Cookie{
+		Name:  consts.CookieKeyTGT,
+		Value: tgt.ID,
+		Path:  "/",
+	})
 
-	log.Println("Post Login")
+	var st *cashew.Ticket
+	st, err = d.uc.ServiceTicket(r, svc, tgt)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+		return
+	}
+
+	q := svc.Query()
+	q.Add("ticket", st.ID)
+	svc.RawQuery = q.Encode()
+	// if ticket is valid, redirect to service
+	http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 }
 
 // Mount route with handler
