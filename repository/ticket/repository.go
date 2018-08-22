@@ -2,9 +2,9 @@ package ticket
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/values/errs"
 )
 
 // Repository hold db connection and statements
@@ -120,11 +120,6 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 type ticketInserter func(tx *sql.Tx, t *cashew.Ticket) error
 
 var (
-	// ErrTicketGrantedTicketIsNotFound error when ticket has no granter
-	ErrTicketGrantedTicketIsNotFound = errors.New("granting ticket is not found")
-)
-
-var (
 	// ticket all ticket insert by this
 	ticket ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
 		stmt, err := tx.Prepare(createTicketQuery)
@@ -229,7 +224,7 @@ var (
 			return nil
 		}
 		if t.GrantedBy == nil {
-			return ErrTicketGrantedTicketIsNotFound
+			return errs.ErrTicketGrantedTicketIsNotFound
 		}
 		stmt, err := tx.Prepare(createTicketGrantQuery)
 		if err != nil {
