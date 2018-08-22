@@ -6,11 +6,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - Istyle CAS</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
     <!-- Bulma Version 0.7.1-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css" />
+    <link rel="stylesheet" href="/css/bulma.min.css" />
     <style type="text/css">
+        @font-face {
+            font-family: 'Open Sans';
+            src: url('/ttf/OpenSans-Regular.ttf') format('truetype');
+        }
+
         html,
         body {
             font-family: 'Open Sans', serif;
@@ -62,14 +66,32 @@
 <body>
     <section class="hero is-success is-fullheight">
         <div class="hero-body">
+            {{ range $m := .Messages }}
+            <article class="message is-primary">
+                <div class="message-header">
+                    <p>Message</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    {{ $m }}
+                </div>
+            </article>
+            {{ end }} {{ range $m := .Errors }}
+            <article class="message is-danger">
+                <div class="message-header">
+                    <p>Error</p>
+                    <button class="delete" aria-label="delete"></button>
+                </div>
+                <div class="message-body">
+                    {{ $m }}
+                </div>
+            </article>
+            {{ end }}
             <div class="container has-text-centered">
                 <div class="column is-4 is-offset-4">
                     <h3 class="title has-text-grey">Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
                     <div class="box">
-                        <!-- <figure class="avatar">
-                            <img src="https://placehold.it/128x128">
-                        </figure> -->
                         <form method="post" action="/login">
                             <div class="field">
                                 <div class="control">
