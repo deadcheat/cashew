@@ -46,10 +46,11 @@ type Authenticator struct {
 
 // AuthDatabase struct of database setting
 type AuthDatabase struct {
-	*Database   `yaml:"database"`
-	Table       string `yaml:"table"`
-	UserNameKey string `yaml:"user_name_key"`
-	PasswordKey string `yaml:"password_key"`
+	*Database      `yaml:"database"`
+	Table          string `yaml:"table"`
+	UserNameColumn string `yaml:"user_name_column"`
+	PasswordColumn string `yaml:"password_column"`
+	SaltColumn     string `yaml:"salt_column"`
 }
 
 // LDAP struct of LDAP authenticator

@@ -34,8 +34,8 @@ func New(r *mux.Router, uc cashew.LoginUseCase, auc cashew.AuthenticateUseCase) 
 	return &Deliver{r: r, uc: uc, auc: auc}
 }
 
-// GetLogin handle GET request to /login
-func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
+// get handle GET request to /login
+func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
 
@@ -52,12 +52,13 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
-		err = d.showLoginPage(w, r, svc)
+		err = d.showLoginPage(w, r, svc, nil, nil)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show login page", http.StatusInternalServerError)
 			return
 		}
+		return
 	}
 	gateways := params[consts.ParamKeyGateway]
 	if stringSliceContainsTrue(gateways) {
@@ -103,14 +104,12 @@ func (d *Deliver) GetLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error occurred when validating ticket: %s", tgtID), http.StatusInternalServerError)
 		return
 	}
-
-	err = d.showLoginPage(w, r, svc)
+	err = d.showLoginPage(w, r, svc, []string{}, []string{})
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to show login page", http.StatusInternalServerError)
 		return
 	}
-
 }
 
 func setHeaderNoCache(w http.ResponseWriter) {
@@ -128,7 +127,11 @@ func serviceURL(v url.Values) (*url.URL, error) {
 	return service.NormalizeURL(serviceURL)
 }
 
-func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL) (err error) {
+func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, messages []string, errors []string) (err error) {
+	service := ""
+	if svc != nil {
+		service = svc.String()
+	}
 	var lt *cashew.Ticket
 	lt, err = d.uc.LoginTicket(r)
 	if err != nil {
@@ -145,8 +148,12 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
 	return t.Execute(w, map[string]interface{}{
-		"Service":     svc.String(),
+		"Service":     service,
 		"LoginTicket": lt.ID,
+		"Messages":    messages,
+		"Errors":      errors,
+		"UserName":    "",
+		"Password":    "",
 	})
 }
 
@@ -161,8 +168,8 @@ func stringSliceContainsTrue(src []string) bool {
 	return false
 }
 
-// PostLogin handle post method request to /login
-func (d *Deliver) PostLogin(w http.ResponseWriter, r *http.Request) {
+// post handle post method request to /login
+func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
 
@@ -239,8 +246,8 @@ func (d *Deliver) GetLogOut(w http.ResponseWriter, r *http.Request) {
 
 // Mount route with handler
 func (d *Deliver) Mount() {
-	d.r.HandleFunc("/login", d.GetLogin).Methods(http.MethodGet)
-	d.r.HandleFunc("/login", d.PostLogin).Methods(http.MethodPost)
+	d.r.HandleFunc("/login", d.get).Methods(http.MethodGet)
+	d.r.HandleFunc("/login", d.post).Methods(http.MethodPost)
 }
 
 func firstString(s []string) string {

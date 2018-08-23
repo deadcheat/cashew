@@ -11,8 +11,12 @@ import (
 // Repository implements cashew.ClientHostNameRepository
 type Repository struct{}
 
-func New() cashew.ClientHostNameRepository
+// New return Repository implemented structure
+func New() cashew.ClientHostNameRepository {
+	return &Repository{}
+}
 
-func (r *Repository) Ensure(r *http.Request) string {
+// Ensure return real ip/host from request
+func (re *Repository) Ensure(r *http.Request) string {
 	return realip.FromRequest(r)
 }

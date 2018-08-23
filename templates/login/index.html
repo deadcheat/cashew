@@ -6,13 +6,13 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - Istyle CAS</title>
-    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
     <!-- Bulma Version 0.7.1-->
-    <link rel="stylesheet" href="/css/bulma.min.css" />
+    <link rel="stylesheet" href="/assets/css/bulma.min.css" />
     <style type="text/css">
         @font-face {
             font-family: 'Open Sans';
-            src: url('/ttf/OpenSans-Regular.ttf') format('truetype');
+            src: url('/assets/ttf/OpenSans-Regular.ttf') format('truetype');
         }
 
         html,
@@ -95,13 +95,15 @@
                         <form method="post" action="/login">
                             <div class="field">
                                 <div class="control">
-                                    <input class="input is-large" name="username" type="text" placeholder="Your User Name" autofocus="" tabindex="1" accesskey="u">
+                                    <input class="input is-large" name="username" type="text" placeholder="Your User Name" autofocus="" tabindex="1" accesskey="u"
+                                        value="{{ .UserName }}">
                                 </div>
                             </div>
 
                             <div class="field">
                                 <div class="control">
-                                    <input class="input is-large" type="password" name="password" placeholder="Your Password" tabindex="2" accesskey="p" autocomplete="off">
+                                    <input class="input is-large" type="password" name="password" placeholder="Your Password" tabindex="2" accesskey="p" autocomplete="off"
+                                        value="{{ .Password }}">
                                 </div>
                             </div>
                             <div class="field">

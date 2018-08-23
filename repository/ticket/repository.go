@@ -35,9 +35,8 @@ func (r *Repository) Create(t *cashew.Ticket) error {
 		return err
 	}
 	defer tx.Rollback()
-
-	for _, logic := range logics {
-		if err = logic(tx, t); err != nil {
+	for i := range logics {
+		if err = logics[i](tx, t); err != nil {
 			return err
 		}
 	}
@@ -232,7 +231,7 @@ var (
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(t.ID, t.GrantedBy.ID, t.ID)
+		_, err = stmt.Exec(t.GrantedBy.ID, t.ID)
 		return err
 	}
 )

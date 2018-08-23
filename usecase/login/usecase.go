@@ -46,6 +46,7 @@ func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.T
 	if service == nil {
 		return nil, errs.ErrNoServiceDetected
 	}
+	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeService
 	t.ID = u.idr.Issue(t.Type)
 	t.ClientHostName = u.chr.Ensure(r)
@@ -61,6 +62,7 @@ func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.T
 
 // TicketGrantingTicket create new ServiceTicket
 func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
+	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeTicketGranting
 	t.ID = u.idr.Issue(t.Type)
 	t.ClientHostName = u.chr.Ensure(r)
@@ -75,6 +77,7 @@ func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAt
 
 // LoginTicket create new LoginTicket
 func (u *UseCase) LoginTicket(r *http.Request) (t *cashew.Ticket, err error) {
+	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeLogin
 	t.ID = u.idr.Issue(t.Type)
 	t.ClientHostName = u.chr.Ensure(r)

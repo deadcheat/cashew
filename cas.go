@@ -8,8 +8,6 @@ import (
 // Deliver delivery interface
 type Deliver interface {
 	Mount()
-	GetLogin(w http.ResponseWriter, r *http.Request)
-	PostLogin(w http.ResponseWriter, r *http.Request)
 }
 
 // LoginUseCase define behaviors for Cas Server

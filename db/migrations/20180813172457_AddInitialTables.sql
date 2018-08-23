@@ -86,8 +86,7 @@ COMMENT '';
 -- ticket_grant_ticket
 CREATE TABLE ticket_grant_ticket
 (
-    id varchar(256) PRIMARY KEY NOT NULL COMMENT 'granted id',
-    source_ticket_id varchar(256) NOT NULL COMMENT 'ticket id has granted',
+    source_ticket_id varchar(256) PRIMARY KEY NOT NULL COMMENT 'ticket id has granted',
     destination_ticket_id varchar(256) NOT NULL COMMENT 'ticket id has been granted',
     created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'created datetime',
     CONSTRAINT fk_ticket_grant_ticket_tickets_as_source FOREIGN KEY (source_ticket_id) REFERENCES tickets (id),

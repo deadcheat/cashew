@@ -16,18 +16,8 @@
 [[projects]]
   name = "github.com/deadcheat/goblet"
   packages = ["."]
-  revision = "889e27ca4ae2be01d23184e77c28b5c804ca5d32"
-  version = "v1.0.0"
-
-[[projects]]
-  name = "github.com/go-playground/locales"
-  packages = [
-    ".",
-    "currency",
-    "id"
-  ]
-  revision = "f63010822830b6fe52288ee52d5a1151088ce039"
-  version = "v0.12.1"
+  revision = "95de6f0dbf72101b03a37ab6715c46ceed5a3f1c"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/go-sql-driver/mysql"
@@ -63,7 +53,7 @@
   branch = "master"
   name = "golang.org/x/net"
   packages = ["idna"]
-  revision = "aaf60122140d3fcf75376d319f0554393160eb50"
+  revision = "922f4815f713f213882e8ef45e0d315b164d705c"
 
 [[projects]]
   branch = "master"
@@ -72,7 +62,7 @@
     "unix",
     "windows"
   ]
-  revision = "1c9583448a9c3aa0f9a6a5241bf73c0bd8aafded"
+  revision = "3b58ed4ad3395d483fc92d5d14123ce2c3581fec"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -111,6 +101,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "906c35d962f25d1302d99dde7936685ea59e45231cb973cd2211620b0e1ae95d"
+  inputs-digest = "83cac4e591ba89d55cce21faad2c36f4f1706f2b93270fdbb5ee1ed6b32226f7"
   solver-name = "gps-cdcl"
   solver-version = 1

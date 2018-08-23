@@ -6,10 +6,13 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/deadcheat/cashew/repository/host"
+	"github.com/deadcheat/cashew/repository/id"
 	"github.com/deadcheat/cashew/repository/ticket"
+	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
-	"github.com/go-playground/locales/id"
 
+	"github.com/deadcheat/cashew/deliver/assets"
 	ld "github.com/deadcheat/cashew/deliver/login"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/gorilla/mux"
@@ -43,9 +46,15 @@ func main() {
 	// create usecase, repository, deliver and mount them
 	ticketRepository := ticket.New(foundation.DB())
 	idRepository := id.New()
-	loginUseCase := login.New(ticketRepository, idRepository)
-	login := ld.New(r, loginUseCase)
+	hostRepository := host.New()
+	loginUseCase := login.New(ticketRepository, idRepository, hostRepository)
+	authUseCase := auth.New()
+	login := ld.New(r, loginUseCase, authUseCase)
 	login.Mount()
+
+	// mount to static files
+	statics := assets.New(r)
+	statics.Mount()
 
 	// start cas server
 	bindAddress := fmt.Sprintf("%s:%d", foundation.App().Host, foundation.App().Port)
