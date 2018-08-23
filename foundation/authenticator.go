@@ -16,7 +16,7 @@ func PrepareAuthenticator() (err error) {
 		return ErrSettingHasNotBeenLoaded
 	}
 	authenticator, err = assignAuthenticator(app.Authenticator)
-	return nil
+	return err
 }
 
 // assignAuthenticator assign new local authenticator

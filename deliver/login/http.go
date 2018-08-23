@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -175,7 +176,14 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 
 	setHeaderNoCache(w)
 
-	params := r.URL.Query()
+	if err = r.ParseForm(); err != nil {
+		log.Println(err)
+		http.Error(w, "failed to parse posted form data", http.StatusInternalServerError)
+		return
+	}
+
+	params := r.Form
+
 	var svc *url.URL
 	svc, err = serviceURL(params)
 	if err != nil {
@@ -210,7 +218,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.TicketGrantingTicket(r, u, struct{}{})
+	data, err := json.Marshal(struct{}{})
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
+		return
+	}
+	tgt, err = d.uc.TicketGrantingTicket(r, u, data)
 	if err != nil {
 		log.Println(err)
 		// FIXME to show error message to loginpage
@@ -226,9 +240,16 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 
 	var st *cashew.Ticket
 	st, err = d.uc.ServiceTicket(r, svc, tgt)
-	if err != nil {
+	switch err {
+	case nil:
+		break
+	case errs.ErrNoServiceDetected:
+		fmt.Fprint(w, "successfully authenticated but no service param was given and we can't redirect anymore ")
+		return
+	default:
 		log.Println(err)
-		http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+		// FIXME to show error message to loginpage
+		http.Error(w, "failed to issue ticket granting ticket", http.StatusBadRequest)
 		return
 	}
 

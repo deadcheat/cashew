@@ -37,7 +37,7 @@ authenticator:
       pass: password
       host: localhost
       port: 3306
-    table: auth
+    table: users
     user_name_column: name
     password_column: password
 

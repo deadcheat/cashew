@@ -72,7 +72,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		&service,
 		&userName,
 		&iou,
-		extraAttributes,
+		&extraAttributes,
 		&grantedBy,
 	)
 	if err != nil {
@@ -219,7 +219,7 @@ var (
 
 	// inserter for ticket_granting_ticket
 	ticketGrant ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeProxyGranting && t.Type != cashew.TicketTypeTicketGranting {
+		if t.Type != cashew.TicketTypeService {
 			return nil
 		}
 		if t.GrantedBy == nil {

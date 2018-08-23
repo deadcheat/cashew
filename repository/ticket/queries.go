@@ -9,7 +9,7 @@ const (
 	createTicketUsernameQuery        = `INSERT INTO ticket_username (ticket_id, username, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketIOUQuery             = `INSERT INTO ticket_iou (ticket_id, iou, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketExpiresQuery         = `INSERT INTO ticket_expires (ticket_id, expires_at, created_at) VALUES (?, ?, DEFAULT)`
-	createTicketExtraAttributesQuery = `INSERT INTO ticket_extra_attributes (ticket_id, extra_attribute, created_at) VALUES (?, ?, DEFAULT)`
+	createTicketExtraAttributesQuery = `INSERT INTO ticket_extra_attribute (ticket_id, extra_attribute, created_at) VALUES (?, ?, DEFAULT)`
 
 	// queries for select
 	selectByTicketIDQuery = `SELECT
@@ -22,7 +22,7 @@ const (
     tu.username,
     i.iou,
     tea.extra_attribute,
-    tgt.id granted_by
+    gt.id granted_by
   FROM tickets T
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
     LEFT JOIN ticket_service ts ON t.id = ts.ticket_id

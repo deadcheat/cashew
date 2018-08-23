@@ -34,8 +34,7 @@ func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) (*cashew.Ticket
 	if ticket.Type != t {
 		return nil, errs.ErrTicketTypeNotMatched
 	}
-
-	if ticket.ExpiresAt.Before(timer.Local.Now()) {
+	if ticket.ExpiresAt != nil && ticket.ExpiresAt.Before(timer.Local.Now()) {
 		return nil, errs.ErrTicketHasBeenExpired
 	}
 	return ticket, nil
