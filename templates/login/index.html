@@ -65,29 +65,29 @@
 
 <body>
     <section class="hero is-success is-fullheight">
+        {{ range $m := .Messages }}
+        <article class="message is-primary">
+            <div class="message-header">
+                <p>Message</p>
+                <button class="delete" aria-label="delete"></button>
+            </div>
+            <div class="message-body">
+                {{ $m }}
+            </div>
+        </article>
+        <br/> {{ end }} {{ range $m := .Errors }}
+        <article class="message is-danger">
+            <div class="message-header">
+                <p>Error</p>
+                <button class="delete" aria-label="delete"></button>
+            </div>
+            <div class="message-body">
+                {{ $m }}
+            </div>
+        </article><br/> {{ end }}
         <div class="hero-body">
-            {{ range $m := .Messages }}
-            <article class="message is-primary">
-                <div class="message-header">
-                    <p>Message</p>
-                    <button class="delete" aria-label="delete"></button>
-                </div>
-                <div class="message-body">
-                    {{ $m }}
-                </div>
-            </article>
-            {{ end }} {{ range $m := .Errors }}
-            <article class="message is-danger">
-                <div class="message-header">
-                    <p>Error</p>
-                    <button class="delete" aria-label="delete"></button>
-                </div>
-                <div class="message-body">
-                    {{ $m }}
-                </div>
-            </article>
-            {{ end }}
             <div class="container has-text-centered">
+                {{ if not .LoggedIn }}
                 <div class="column is-4 is-offset-4">
                     <h3 class="title has-text-grey">Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
@@ -117,6 +117,8 @@
                         </form>
                     </div>
                 </div>
+                {{ else }}
+                <img src="/assets/images/success.jpg" alt=""> {{ end }}
             </div>
         </div>
     </section>

@@ -13,6 +13,7 @@ import (
 
 	"github.com/deadcheat/goblet"
 
+	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
@@ -39,6 +40,7 @@ func New(r *mux.Router, uc cashew.LoginUseCase, auc cashew.AuthenticateUseCase) 
 func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
+	mp := message.New()
 
 	setHeaderNoCache(w)
 
@@ -53,7 +55,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
-		err = d.showLoginPage(w, r, svc, nil, nil)
+		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors())
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -82,7 +84,13 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		if svc == nil {
 			log.Println("already logged in and no service detected")
-			_, _ = fmt.Fprint(w, "you're already logged in and you didn't set an url to be redirected")
+			mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
+			err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
+			if err != nil {
+				log.Println(err)
+				http.Error(w, "failed to show login page", http.StatusInternalServerError)
+				return
+			}
 			return
 		}
 		var st *cashew.Ticket
@@ -105,7 +113,8 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error occurred when validating ticket: %s", tgtID), http.StatusInternalServerError)
 		return
 	}
-	err = d.showLoginPage(w, r, svc, []string{}, []string{})
+	// display login page
+	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors())
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -128,15 +137,19 @@ func serviceURL(v url.Values) (*url.URL, error) {
 	return service.NormalizeURL(serviceURL)
 }
 
-func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, messages []string, errors []string) (err error) {
+func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, loggedIn bool, username, password string, messages []string, errors []string) (err error) {
 	service := ""
 	if svc != nil {
 		service = svc.String()
 	}
-	var lt *cashew.Ticket
-	lt, err = d.uc.LoginTicket(r)
-	if err != nil {
-		return
+	ltID := ""
+	if !loggedIn {
+		var lt *cashew.Ticket
+		lt, err = d.uc.LoginTicket(r)
+		if err != nil {
+			return
+		}
+		ltID = lt.ID
 	}
 	t := template.New("cas login")
 	var f *goblet.File
@@ -145,16 +158,17 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 		return
 	}
 	// FIXME parse process should be done when app start
-	t, _ = t.Parse(string(f.Data))
+	t, err = t.Parse(string(f.Data))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(http.StatusFound)
 	return t.Execute(w, map[string]interface{}{
 		"Service":     service,
-		"LoginTicket": lt.ID,
+		"LoginTicket": ltID,
 		"Messages":    messages,
 		"Errors":      errors,
-		"UserName":    "",
-		"Password":    "",
+		"LoggedIn":    loggedIn,
+		"UserName":    username,
+		"Password":    password,
 	})
 }
 
@@ -173,6 +187,7 @@ func stringSliceContainsTrue(src []string) bool {
 func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	// define error
 	var err error
+	mp := message.New()
 
 	setHeaderNoCache(w)
 
@@ -213,8 +228,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	// authenticate
 	if err = d.auc.Authenticate(u, p); err != nil {
 		log.Println(err)
-		// FIXME to show error message to loginpage
-		http.Error(w, "invalid login ticket", http.StatusUnauthorized)
+		mp.AddErr("your authentication is invalid")
+		err = d.showLoginPage(w, r, svc, false, u, p, mp.Info(), mp.Errors())
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to show page", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 	var tgt *cashew.Ticket
@@ -244,7 +264,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		break
 	case errs.ErrNoServiceDetected:
-		fmt.Fprint(w, "successfully authenticated but no service param was given and we can't redirect anymore ")
+		mp.AddInfo("successfully authenticated but no service param was given and we can't redirect anymore ")
+		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to show page", http.StatusInternalServerError)
+			return
+		}
 		return
 	default:
 		log.Println(err)
