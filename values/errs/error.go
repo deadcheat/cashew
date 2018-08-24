@@ -29,4 +29,7 @@ var (
 
 	// ErrHardTimeoutTicket error when ticket reached hard-timeout
 	ErrHardTimeoutTicket = errors.New("this ticket may be a hard-timed-out one")
+
+	// ErrMultipleUserFound defined error when multiple users matched identification
+	ErrMultipleUserFound = errors.New("there are many users to match user/password")
 )

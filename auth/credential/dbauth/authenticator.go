@@ -3,7 +3,6 @@ package dbauth
 import (
 	"crypto/sha256"
 	"database/sql"
-	"errors"
 	"fmt"
 
 	"github.com/deadcheat/cashew/auth/credential"
@@ -65,11 +64,6 @@ WHERE
 `
 )
 
-var (
-	// ErrMultipleUserFound defined error when multiple users matched identification
-	ErrMultipleUserFound = errors.New("there are many users to match user/password")
-)
-
 type user struct {
 	name string
 	pass string
@@ -97,7 +91,7 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
 		return
 	}
 	if count > 1 {
-		return ErrMultipleUserFound
+		return errs.ErrMultipleUserFound
 	}
 
 	// validate found user
