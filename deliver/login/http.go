@@ -153,7 +153,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	}
 	t := template.New("cas login")
 	var f *goblet.File
-	f, err = assets.Assets.File("/templates/login/index.html")
+	f, err = assets.Assets.File("/files/login/index.html")
 	if err != nil {
 		return
 	}

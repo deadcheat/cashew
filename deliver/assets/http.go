@@ -19,7 +19,7 @@ type Deliver struct {
 
 // New return new deliver interface
 func New(r *mux.Router) cashew.Deliver {
-	fs := assets.Assets.WithPrefix("/assets/").WithIgnoredPrefix("/templates/")
+	fs := assets.Assets.WithPrefix("/assets/").WithIgnoredPrefix("/files/")
 	return &Deliver{r, fs}
 }
 
