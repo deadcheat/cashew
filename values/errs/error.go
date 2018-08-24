@@ -20,4 +20,7 @@ var (
 
 	// ErrTicketGrantedTicketIsNotFound error when ticket has no granter
 	ErrTicketGrantedTicketIsNotFound = errors.New("granting ticket is not found")
+
+	// ErrInvalidMethodCall error when invalid argument for method
+	ErrInvalidMethodCall = errors.New("you may failed how to invoke this method")
 )

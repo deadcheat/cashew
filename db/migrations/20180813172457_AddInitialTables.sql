@@ -48,17 +48,18 @@ DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
 COMMENT 'username for ticket such as proxy grainting ticket and service ticket';
 CREATE INDEX idx_ticket_username_username ON ticket_username (username);
 
--- ticket_expires
-CREATE TABLE ticket_expires
+-- ticket_last_referenced
+CREATE TABLE ticket_last_referenced
 (
     ticket_id varchar(256) NOT NULL COMMENT 'ticket id',
-    expires_at datetime NOT NULL COMMENT '',
+    last_referenced_at datetime NOT NULL COMMENT '',
     created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'created datetime',
-    CONSTRAINT fk_ticket_expires_tickets FOREIGN KEY (ticket_id) REFERENCES tickets (id)
+    updated_at datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL COMMENT 'updated datetime',
+    CONSTRAINT fk_ticket_last_referenced_tickets FOREIGN KEY (ticket_id) REFERENCES tickets (id)
 )
 DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
 COMMENT 'expire datetime for ticket';
-CREATE INDEX idx_ticket_expires_expires_at ON ticket_expires (expires_at);
+CREATE INDEX idx_ticket_last_referenced_last_referenced_at ON ticket_last_referenced (last_referenced_at);
 
 -- ticket_iou
 CREATE TABLE ticket_iou

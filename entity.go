@@ -15,8 +15,8 @@ type Ticket struct {
 	ClientHostName string
 	CreatedAt      time.Time
 
-	// required for service ticket, proxy ticket and proxy_granting_ticket
-	ExpiresAt *time.Time
+	// required for service-ticket, proxy-ticket, proxy-granting-ticket and ticket-granting-ticket
+	LastReferencedAt *time.Time
 
 	// required for service ticket
 	Service string

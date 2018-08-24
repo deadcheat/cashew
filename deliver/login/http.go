@@ -14,10 +14,10 @@ import (
 	"github.com/deadcheat/goblet"
 
 	"github.com/deadcheat/cashew/provider/message"
+	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/assets"
 	"github.com/deadcheat/cashew/helpers/service"
 	"github.com/deadcheat/cashew/values/consts"
 
@@ -153,7 +153,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	}
 	t := template.New("cas login")
 	var f *goblet.File
-	f, err = assets.Assets.File("/files/login/index.html")
+	f, err = templates.Assets.File("/login/index.html")
 	if err != nil {
 		return
 	}

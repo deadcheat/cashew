@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/values/errs"
 )
 
 // Repository hold db connection and statements
@@ -17,26 +16,27 @@ func New(db *sql.DB) cashew.TicketRepository {
 	return &Repository{db}
 }
 
-var logics = []ticketInserter{
-	ticket,
-	ticketType,
-	ticketService,
-	ticketGrant,
-	ticketUserName,
-	ticketIOU,
-	ticketExpires,
-	ticketExtraAttributes,
-}
+type ticketAccessor func(tx *sql.Tx, t *cashew.Ticket) error
 
 // Create create new ticket
 func (r *Repository) Create(t *cashew.Ticket) error {
+	return r.executeTicketAccessors(insertAccessors, t)
+}
+
+// Delete from all ticket-related table and ticket table
+func (r *Repository) Delete(t *cashew.Ticket) error {
+	return r.executeTicketAccessors(deleteAccessors, t)
+}
+
+func (r *Repository) executeTicketAccessors(accessors []ticketAccessor, t *cashew.Ticket) error {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
-	for i := range logics {
-		if err = logics[i](tx, t); err != nil {
+	// FIXME if executer process increased wait-queues
+	for i := range accessors {
+		if err = accessors[i](tx, t); err != nil {
 			return err
 		}
 	}
@@ -68,7 +68,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		&typeStr,
 		&ticket.ClientHostName,
 		&ticket.CreatedAt,
-		&ticket.ExpiresAt,
+		&ticket.LastReferencedAt,
 		&service,
 		&userName,
 		&iou,
@@ -115,123 +115,3 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 
 	return &ticket, nil
 }
-
-type ticketInserter func(tx *sql.Tx, t *cashew.Ticket) error
-
-var (
-	// ticket all ticket insert by this
-	ticket ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		stmt, err := tx.Prepare(createTicketQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.ClientHostName)
-		return err
-	}
-
-	// inserter for ticket_type
-	ticketType ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		stmt, err := tx.Prepare(createTicketTypeQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.Type.String())
-		return err
-	}
-
-	// inserter for ticket_service
-	ticketService ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService {
-			return nil
-		}
-		stmt, err := tx.Prepare(createTicketServiceQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.Service)
-		return err
-	}
-
-	// inserter for ticket_username
-	ticketUserName ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeTicketGranting {
-			return nil
-		}
-		stmt, err := tx.Prepare(createTicketUsernameQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.UserName)
-		return err
-	}
-
-	// inserter for ticket_iou
-	ticketIOU ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeProxyGranting {
-			return nil
-		}
-		stmt, err := tx.Prepare(createTicketIOUQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.IOU)
-		return err
-	}
-	// inserter for ticket_expires
-	ticketExpires ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeProxy && t.Type != cashew.TicketTypeProxyGranting {
-			return nil
-		}
-		stmt, err := tx.Prepare(createTicketExpiresQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.ExpiresAt)
-		return err
-	}
-
-	// inserter for ticket_extra_attributes
-	ticketExtraAttributes ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeTicketGranting {
-			return nil
-		}
-		stmt, err := tx.Prepare(createTicketExtraAttributesQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.ID, t.ExtraAttributes)
-		return err
-	}
-
-	// inserter for ticket_granting_ticket
-	ticketGrant ticketInserter = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService {
-			return nil
-		}
-		if t.GrantedBy == nil {
-			return errs.ErrTicketGrantedTicketIsNotFound
-		}
-		stmt, err := tx.Prepare(createTicketGrantQuery)
-		if err != nil {
-			return err
-		}
-		defer stmt.Close()
-
-		_, err = stmt.Exec(t.GrantedBy.ID, t.ID)
-		return err
-	}
-)
