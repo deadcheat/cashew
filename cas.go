@@ -12,15 +12,18 @@ type Deliver interface {
 
 // LoginUseCase define behaviors for Cas Server
 type LoginUseCase interface {
-	ValidateTicket(ticketType TicketType, id string) (*Ticket, error)
+	FindTicket(id string) (*Ticket, error)
+	ValidateTicket(TicketType, *Ticket) error
 	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket) (*Ticket, error)
 	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
 	LoginTicket(r *http.Request) (*Ticket, error)
+	TerminateLoginTicket(*Ticket) error
 }
 
 // TicketRepository repository for ticket
 type TicketRepository interface {
 	Find(id string) (*Ticket, error)
+	Delete(t *Ticket) error
 	Create(t *Ticket) error
 }
 

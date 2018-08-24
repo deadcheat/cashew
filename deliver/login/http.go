@@ -215,15 +215,22 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	u = strings.Trim(u, " ")
 
 	var lt *cashew.Ticket
+	// delete login ticket
+	// if it failed, ignore that instantly
+	defer func() {
+		if lt != nil {
+			return
+		}
+		if internalErr := d.uc.TerminateLoginTicket(lt); internalErr != nil {
+			log.Println("login ticket deletion internal error ", internalErr)
+		}
+	}()
 	lt, err = d.uc.ValidateTicket(cashew.TicketTypeLogin, l)
-
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "invalid login ticket", http.StatusBadRequest)
 		return
 	}
-	// FIXME use lt (it should be deleted)
-	_ = lt
 
 	// authenticate
 	if err = d.auc.Authenticate(u, p); err != nil {

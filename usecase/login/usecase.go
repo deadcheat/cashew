@@ -5,7 +5,7 @@ import (
 	"net/url"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/timer"
+	"github.com/deadcheat/cashew/validator/ticket"
 	"github.com/deadcheat/cashew/values/errs"
 )
 
@@ -14,30 +14,30 @@ type UseCase struct {
 	r   cashew.TicketRepository
 	idr cashew.IDRepository
 	chr cashew.ClientHostNameRepository
+	tv  ticket.Validator
 }
 
 // New return new usecase
 func New(r cashew.TicketRepository, idr cashew.IDRepository, chr cashew.ClientHostNameRepository) cashew.LoginUseCase {
-	return &UseCase{r, idr, chr}
+	tv := ticket.New()
+	return &UseCase{r, idr, chr, tv}
 }
 
 // ValidateTicket validate ticket identified id
-func (u *UseCase) ValidateTicket(t cashew.TicketType, id string) (*cashew.Ticket, error) {
+func (u *UseCase) ValidateTicket(ticketType cashew.TicketType, t *cashew.Ticket) error {
+	if t.Type != ticketType {
+		return errs.ErrTicketTypeNotMatched
+	}
+
+	return u.tv.Validate(t)
+}
+
+// FindTicket find ticket by id
+func (u *UseCase) FindTicket(id string) (*cashew.Ticket, error) {
 	if id == "" {
 		return nil, errs.ErrNoTicketID
 	}
-	ticket, err := u.r.Find(id)
-	if err != nil {
-		return nil, err
-	}
-
-	if ticket.Type != t {
-		return nil, errs.ErrTicketTypeNotMatched
-	}
-	if ticket.ExpiresAt != nil && ticket.ExpiresAt.Before(timer.Local.Now()) {
-		return nil, errs.ErrTicketHasBeenExpired
-	}
-	return ticket, nil
+	return u.r.Find(id)
 }
 
 // ServiceTicket create new ServiceTicket
@@ -90,4 +90,12 @@ func (u *UseCase) LoginTicket(r *http.Request) (t *cashew.Ticket, err error) {
 // Login login auth
 func (u *UseCase) Login() error {
 	return nil
+}
+
+// TerminateLoginTicket delete login ticket
+func (u *UseCase) TerminateLoginTicket(t *cashew.Ticket) error {
+	if t.Type != cashew.TicketTypeLogin {
+		return errs.ErrInvalidTicketType
+	}
+	return u.r.Delete(t)
 }

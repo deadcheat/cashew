@@ -23,4 +23,10 @@ var (
 
 	// ErrInvalidMethodCall error when invalid argument for method
 	ErrInvalidMethodCall = errors.New("you may failed how to invoke this method")
+
+	// ErrInvalidTicketType error when unexpected ticket passed as arguments
+	ErrInvalidTicketType = errors.New("this method may not be scheduled to receive this type of ticket")
+
+	// ErrHardTimeoutTicket error when ticket reached hard-timeout
+	ErrHardTimeoutTicket = errors.New("this ticket may be a hard-timed-out one")
 )
