@@ -79,39 +79,44 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 
 	// redirect service with service ticket when tgt ticket is valid
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgtID)
-	switch err {
-	case nil:
-		if svc == nil {
-			log.Println("already logged in and no service detected")
-			mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
-			err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
-			if err != nil {
-				log.Println(err)
-				http.Error(w, "failed to show login page", http.StatusInternalServerError)
+	tgt, err = d.uc.FindTicket(tgtID)
+	if err == nil {
+		err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgt)
+		switch err {
+		case nil:
+			if svc == nil {
+				log.Println("already logged in and no service detected")
+				mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
+				err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
+				if err != nil {
+					log.Println(err)
+					http.Error(w, "failed to show login page", http.StatusInternalServerError)
+					return
+				}
 				return
 			}
+			var st *cashew.Ticket
+			st, err = d.uc.ServiceTicket(r, svc, tgt)
+			if err != nil {
+				log.Println(err)
+				http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+				return
+			}
+			q := svc.Query()
+			q.Add("ticket", st.ID)
+			svc.RawQuery = q.Encode()
+			// if ticket is valid, redirect to service
+			http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 			return
-		}
-		var st *cashew.Ticket
-		st, err = d.uc.ServiceTicket(r, svc, tgt)
-		if err != nil {
+		case errs.ErrTicketHasBeenExpired, errs.ErrTicketTypeNotMatched:
+			log.Println(err, tgtID)
+		default:
 			log.Println(err)
-			http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("error occurred when validating ticket: %s", tgtID), http.StatusInternalServerError)
 			return
 		}
-		q := svc.Query()
-		q.Add("ticket", st.ID)
-		svc.RawQuery = q.Encode()
-		// if ticket is valid, redirect to service
-		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
-		return
-	case errs.ErrNoTicketID, errs.ErrTicketHasBeenExpired, errs.ErrTicketTypeNotMatched:
-		log.Println(err, tgtID)
-	default:
-		log.Println(err)
-		http.Error(w, fmt.Sprintf("error occurred when validating ticket: %s", tgtID), http.StatusInternalServerError)
-		return
+	} else {
+		log.Println("tgc not found ", err)
 	}
 	// display login page
 	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors())
@@ -225,15 +230,24 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 			log.Println("login ticket deletion internal error ", internalErr)
 		}
 	}()
-	lt, err = d.uc.ValidateTicket(cashew.TicketTypeLogin, l)
+	lt, err = d.uc.FindTicket(l)
 	if err != nil {
+		// FIXME redirect to /login with service url
 		log.Println(err)
-		http.Error(w, "invalid login ticket", http.StatusBadRequest)
+		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
+		return
+	}
+
+	if err = d.uc.ValidateTicket(cashew.TicketTypeLogin, lt); err != nil {
+		// FIXME redirect to /login with service url
+		log.Println(err)
+		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
 		return
 	}
 
 	// authenticate
 	if err = d.auc.Authenticate(u, p); err != nil {
+		// FIXME redirect to /login with service url
 		log.Println(err)
 		mp.AddErr("your authentication is invalid")
 		err = d.showLoginPage(w, r, svc, false, u, p, mp.Info(), mp.Errors())
@@ -244,6 +258,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	// FIXME for now, we don't get any external attributes
 	var tgt *cashew.Ticket
 	data, err := json.Marshal(struct{}{})
 	if err != nil {
@@ -253,9 +268,9 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 	tgt, err = d.uc.TicketGrantingTicket(r, u, data)
 	if err != nil {
+		// FIXME redirect to /login with service url
 		log.Println(err)
-		// FIXME to show error message to loginpage
-		http.Error(w, "failed to issue ticket granting ticket", http.StatusBadRequest)
+		http.Error(w, "failed to issue ticket granting ticket", http.StatusInternalServerError)
 		return
 	}
 	// set cookie
