@@ -14,6 +14,21 @@ type App struct {
 	Host        string `yaml:"host"`
 	Port        int    `yaml:"port"`
 
+	// GrantingDefaultExpire is seconds from last used for deletion ticket
+	// This value will be set as second.
+	// (T|P)GT will expires 7,200s (2 hour) as default.
+	// If you want to use infinite expire policy, set 0
+	GrantingDefaultExpire int `yaml:"granting_default_expire"`
+
+	// Also, TGT will be timed-up in 28,800s (8 hour) from creation
+	// This parameter also can be infinity when set 0
+	GrantingHardTimeout int `yaml:"granting_hard_timeout"`
+
+	// TicketNumberOfEachUsers is a threshold of tickets that users are allowed to create
+	// This parameter is enabled only on ST/PT
+	// Default value is 20
+	TicketNumberOfEachUsers int `yaml:"ticket_number_of_each_users"`
+
 	// Route Setting
 	URIPath string `yaml:"uri_path"`
 
@@ -74,14 +89,17 @@ type Logging struct {
 var (
 	// DefaultSetting default values for this
 	DefaultSetting = App{
-		UseSSL:        false,
-		SSLCertFile:   "",
-		SSLCertKey:    "",
-		Host:          "127.0.0.1",
-		Port:          3000,
-		URIPath:       "",
-		Database:      nil,
-		Authenticator: nil,
+		UseSSL:      false,
+		SSLCertFile: "",
+		SSLCertKey:  "",
+		Host:        "127.0.0.1",
+		Port:        3000,
+		GrantingDefaultExpire:   7200,
+		GrantingHardTimeout:     28800,
+		TicketNumberOfEachUsers: 20,
+		URIPath:                 "",
+		Database:                nil,
+		Authenticator:           nil,
 		Logging: &Logging{
 			Driver:   "stdout",
 			LogLevel: "debug",
