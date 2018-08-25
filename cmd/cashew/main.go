@@ -41,7 +41,7 @@ func main() {
 	}
 
 	// create router
-	r := mux.NewRouter()
+	r := mux.NewRouter().PathPrefix(foundation.App().BasePath).Subrouter()
 
 	// create usecase, repository, deliver and mount them
 	ticketRepository := ticket.New(foundation.DB())

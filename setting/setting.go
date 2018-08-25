@@ -13,6 +13,7 @@ type App struct {
 	SSLCertKey  string `yaml:"ssl_key"`
 	Host        string `yaml:"host"`
 	Port        int    `yaml:"port"`
+	BasePath    string `yaml:"base_path"`
 
 	// GrantingDefaultExpire is seconds from last used for deletion ticket
 	// This value will be set as second.
@@ -89,11 +90,12 @@ type Logging struct {
 var (
 	// DefaultSetting default values for this
 	DefaultSetting = App{
-		UseSSL:      false,
-		SSLCertFile: "",
-		SSLCertKey:  "",
-		Host:        "127.0.0.1",
-		Port:        3000,
+		UseSSL:                  false,
+		SSLCertFile:             "",
+		SSLCertKey:              "",
+		Host:                    "127.0.0.1",
+		Port:                    3000,
+		BasePath:                "/",
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,
