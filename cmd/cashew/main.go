@@ -6,15 +6,15 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/deadcheat/cashew/deliver/assets"
+	dl "github.com/deadcheat/cashew/deliver/login"
+	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/repository/host"
 	"github.com/deadcheat/cashew/repository/id"
 	"github.com/deadcheat/cashew/repository/ticket"
 	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
 
-	"github.com/deadcheat/cashew/deliver/assets"
-	ld "github.com/deadcheat/cashew/deliver/login"
-	"github.com/deadcheat/cashew/foundation"
 	"github.com/gorilla/mux"
 )
 
@@ -49,7 +49,7 @@ func main() {
 	hostRepository := host.New()
 	loginUseCase := login.New(ticketRepository, idRepository, hostRepository)
 	authUseCase := auth.New()
-	login := ld.New(r, loginUseCase, authUseCase)
+	login := dl.New(r, loginUseCase, authUseCase)
 	login.Mount()
 
 	// mount to static files
