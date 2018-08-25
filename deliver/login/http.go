@@ -55,7 +55,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := params[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
-		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors())
+		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -87,7 +87,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			if svc == nil {
 				log.Println("already logged in and no service detected")
 				mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
-				err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
+				err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 				if err != nil {
 					log.Println(err)
 					http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -99,7 +99,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			st, err = d.uc.ServiceTicket(r, svc, tgt)
 			if err != nil {
 				log.Println(err)
-				http.Error(w, "failed to issue service ticket", http.StatusBadRequest)
+				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)
 				return
 			}
 			q := svc.Query()
@@ -119,7 +119,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		log.Println("tgc not found ", err)
 	}
 	// display login page
-	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors())
+	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -142,7 +142,7 @@ func serviceURL(v url.Values) (*url.URL, error) {
 	return service.NormalizeURL(serviceURL)
 }
 
-func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, loggedIn bool, username, password string, messages []string, errors []string) (err error) {
+func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, loggedIn bool, username, password string, messages []string, errors []string, sc int) (err error) {
 	service := ""
 	if svc != nil {
 		service = svc.String()
@@ -165,7 +165,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	// FIXME parse process should be done when app start
 	t, err = t.Parse(string(f.Data))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	w.WriteHeader(http.StatusFound)
+	w.WriteHeader(sc)
 	return t.Execute(w, map[string]interface{}{
 		"Service":     service,
 		"LoginTicket": ltID,
@@ -250,7 +250,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		mp.AddErr("your authentication is invalid")
-		err = d.showLoginPage(w, r, svc, false, u, p, mp.Info(), mp.Errors())
+		err = d.showLoginPage(w, r, svc, false, u, p, mp.Info(), mp.Errors(), http.StatusUnauthorized)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show page", http.StatusInternalServerError)
@@ -286,8 +286,8 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	case nil:
 		break
 	case errs.ErrNoServiceDetected:
-		mp.AddInfo("successfully authenticated but no service param was given and we can't redirect anymore ")
-		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors())
+		mp.AddInfo("you're successfully authenticated but no service param was given and we can't redirect anymore ")
+		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show page", http.StatusInternalServerError)
