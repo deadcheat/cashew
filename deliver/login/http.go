@@ -317,7 +317,13 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 
 // index handle get method request to /
 func (d *Deliver) index(w http.ResponseWriter, r *http.Request) {
-
+	u := r.URL
+	u.Path = "/login"
+	cs := r.Cookies()
+	for i := range cs {
+		http.SetCookie(w, cs[i])
+	}
+	http.Redirect(w, r, u.String(), http.StatusSeeOther)
 }
 
 // Mount route with handler
