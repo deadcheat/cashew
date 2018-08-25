@@ -7,12 +7,14 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/deadcheat/goblet"
 
+	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/errs"
@@ -277,7 +279,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:  consts.CookieKeyTGT,
 		Value: tgt.ID,
-		Path:  "/",
+		Path:  filepath.Join("/", foundation.App().BasePath),
 	})
 
 	var st *cashew.Ticket
@@ -308,13 +310,20 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 }
 
-// GetLogOut handle get method request to /logout
-func (d *Deliver) GetLogOut(w http.ResponseWriter, r *http.Request) {
+// logout handle get method request to /logout
+func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
+
+}
+
+// index handle get method request to /
+func (d *Deliver) index(w http.ResponseWriter, r *http.Request) {
 
 }
 
 // Mount route with handler
 func (d *Deliver) Mount() {
+	d.r.HandleFunc("/", d.index).Methods(http.MethodGet)
+	d.r.HandleFunc("/logout", d.logout).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.get).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.post).Methods(http.MethodPost)
 }
