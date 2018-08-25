@@ -297,7 +297,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	default:
 		log.Println(err)
 		// FIXME to show error message to loginpage
-		http.Error(w, "failed to issue ticket granting ticket", http.StatusBadRequest)
+		http.Error(w, "failed to issue ticket granting ticket", http.StatusInternalServerError)
 		return
 	}
 
