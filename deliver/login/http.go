@@ -144,6 +144,14 @@ func serviceURL(v url.Values) (*url.URL, error) {
 	return service.NormalizeURL(serviceURL)
 }
 
+func continueURL(v url.Values) (*url.URL, error) {
+	urls := v[consts.ParamKeyService]
+	nextURL := firstString(urls)
+	// enable only first url
+	// if serviceURL is empty, return nil, nil
+	return service.NormalizeURL(nextURL)
+}
+
 func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, loggedIn bool, username, password string, messages []string, errors []string, sc int) (err error) {
 	service := ""
 	if svc != nil {
@@ -312,7 +320,49 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 
 // logout handle get method request to /logout
 func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
+	var err error
+	mp := message.New()
 
+	params := r.URL.Query()
+	// FIXME i might check err
+	svc, _ := serviceURL(params)
+	next, _ := continueURL(params)
+	gateways := params[consts.ParamKeyGateway]
+
+	var tgc *http.Cookie
+	tgc, err = r.Cookie(consts.CookieKeyTGT)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to find ticket granting ticket in cookie", http.StatusBadRequest)
+		return
+	}
+	// delete cookie
+	http.SetCookie(w, nil)
+	tgtID := tgc.Value
+	var tgt *cashew.Ticket
+	tgt, err = d.uc.FindTicket(tgtID)
+	// FIXME make and use that terminate granting ticket
+	if err = d.uc.TerminateLoginTicket(tgt); err != nil {
+		log.Println(err)
+		http.Error(w, "failed to delete ticket granting ticket", http.StatusInternalServerError)
+		return
+	}
+
+	if stringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
+		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
+		return
+	}
+
+	if next != nil {
+		// TODO render logout display
+	}
+	// finally render login display
+	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusOK)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "failed to show page", http.StatusInternalServerError)
+		return
+	}
 }
 
 // index handle get method request to /
