@@ -20,28 +20,39 @@ type ticketAccessor func(tx *sql.Tx, t *cashew.Ticket) error
 
 // Create create new ticket
 func (r *Repository) Create(t *cashew.Ticket) error {
-	return r.executeTicketAccessors(insertAccessors, t)
+	return r.executeOnNewTx(insertAccessors, t)
 }
 
 // Delete from all ticket-related table and ticket table
 func (r *Repository) Delete(t *cashew.Ticket) error {
-	return r.executeTicketAccessors(deleteAccessors, t)
+	return r.executeOnNewTx(deleteAccessors, t)
 }
 
-func (r *Repository) executeTicketAccessors(accessors []ticketAccessor, t *cashew.Ticket) error {
-	tx, err := r.db.Begin()
+func (r *Repository) executeOnNewTx(accessors []ticketAccessor, t *cashew.Ticket) (err error) {
+	var tx *sql.Tx
+	tx, err = r.db.Begin()
 	if err != nil {
-		return err
+		return
 	}
 	defer tx.Rollback()
+	if err = r.executeTicketAccessors(tx, accessors, t); err != nil {
+		return
+	}
+	return tx.Commit()
+}
+
+func (r *Repository) executeWithTx(tx *sql.Tx, accessors []ticketAccessor, t *cashew.Ticket) (err error) {
+	return r.executeTicketAccessors(tx, accessors, t)
+}
+
+func (r *Repository) executeTicketAccessors(tx *sql.Tx, accessors []ticketAccessor, t *cashew.Ticket) (err error) {
 	// FIXME if executer process increased wait-queues
 	for i := range accessors {
 		if err = accessors[i](tx, t); err != nil {
 			return err
 		}
 	}
-
-	return tx.Commit()
+	return nil
 }
 
 // Find search for new ticket by ticket id
@@ -125,6 +136,10 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 	}
 	var rows *sql.Rows
 	rows, err = stmt.Query(id)
+	if err != nil {
+		return
+	}
+	defer rows.Close()
 	ts = make([]*cashew.Ticket, 0)
 	for rows.Next() {
 		var (
@@ -178,9 +193,26 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 	return ts, nil
 }
 
-// DeleteRelatedTicket search for new ticket by ticket id
-func (r *Repository) DeleteRelatedTicket(id string) (err error) {
-	_, _ = findAllRelatedTicket(id)
+func (r *Repository) deleteWithTx(tx *sql.Tx, t *cashew.Ticket) error {
+	return r.executeWithTx(tx, deleteAccessors, t)
+}
 
-	return nil
+// DeleteRelatedTicket search for new ticket by ticket id
+func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
+	var ts []*cashew.Ticket
+	ts, err = r.findAllRelatedTicket(t.ID)
+	var tx *sql.Tx
+	tx, err = r.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+	for i := range ts {
+		t := ts[i]
+		err = r.deleteWithTx(tx, t)
+		if err != nil {
+			return
+		}
+	}
+	return tx.Commit()
 }
