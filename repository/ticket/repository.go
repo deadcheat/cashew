@@ -13,7 +13,7 @@ type Repository struct {
 
 // New create new TicketRepository
 func New(db *sql.DB) cashew.TicketRepository {
-	return &Repository{db}
+	return &Repository{db: db}
 }
 
 type ticketAccessor func(tx *sql.Tx, t *cashew.Ticket) error
@@ -114,4 +114,73 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 	}
 
 	return &ticket, nil
+}
+
+// findAllRelatedTicket search for new ticket by ticket id
+func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err error) {
+	var stmt *sql.Stmt
+	stmt, err = r.db.Prepare(selectAllTicketRelatedByGrantTicket)
+	if err != nil {
+		return
+	}
+	var rows *sql.Rows
+	rows, err = stmt.Query(id)
+	ts = make([]*cashew.Ticket, 0)
+	for rows.Next() {
+		var (
+			ticket          cashew.Ticket
+			typeStr         sql.NullString
+			service         sql.NullString
+			userName        sql.NullString
+			iou             sql.NullString
+			extraAttributes interface{}
+		)
+		err = rows.Scan(
+			&ticket.ID,
+			&typeStr,
+			&ticket.ClientHostName,
+			&ticket.CreatedAt,
+			&ticket.LastReferencedAt,
+			&service,
+			&userName,
+			&iou,
+			&extraAttributes,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		if typeStr.Valid {
+			// NullString always return nil as error
+			tmp, _ := typeStr.Value()
+			ticket.Type = cashew.ParseTicketType(tmp.(string))
+		}
+
+		if service.Valid {
+			// NullString always return nil as error
+			tmp, _ := service.Value()
+			ticket.Service = tmp.(string)
+		}
+
+		if iou.Valid {
+			// NullString always return nil as error
+			tmp, _ := iou.Value()
+			ticket.IOU = tmp.(string)
+		}
+
+		if userName.Valid {
+			// NullString always return nil as error
+			tmp, _ := userName.Value()
+			ticket.UserName = tmp.(string)
+		}
+		ts = append(ts, &ticket)
+	}
+	return ts, nil
+}
+
+// DeleteRelatedTicket search for new ticket by ticket id
+func (r *Repository) DeleteRelatedTicket(id string) (err error) {
+	_, _ = findAllRelatedTicket(id)
+
+	return nil
 }

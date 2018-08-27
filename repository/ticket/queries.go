@@ -12,16 +12,8 @@ const (
 	createTicketExtraAttributesQuery = `INSERT INTO ticket_extra_attribute (ticket_id, extra_attribute, created_at) VALUES (?, ?, DEFAULT)`
 
 	// queries for delete
-	deleteSomeRelatedTable           = `DELETE FROM %s WHERE ticket_id = ?`
-	deleteTicketQuery                = `DELETE FROM tickets WHERE id = ?`
-	deleteTicketTypeQuery            = `DELETE FROM ticket_type WHERE ticket_id = ?`
-	deleteTicketGrantQuery           = `DELETE FROM ticket_grant_ticket WHERE ticket_id = ?`
-	deleteTicketServiceQuery         = `DELETE FROM ticket_service WHERE ticket_id = ?`
-	deleteTicketUsernameQuery        = `DELETE FROM ticket_username WHERE ticket_id = ?`
-	deleteTicketIOUQuery             = `DELETE FROM ticket_iou WHERE ticket_id = ?`
-	deleteTicketExpiresQuery         = `DELETE FROM ticket_expires WHERE ticket_id = ?`
-	deleteTicketLastReferencedQuery  = `DELETE FROM ticket_last_referenced WHERE ticket_id = ?`
-	deleteTicketExtraAttributesQuery = `DELETE FROM ticket_extra_attribute WHERE ticket_id = ?`
+	deleteSomeRelatedTable = `DELETE FROM %s WHERE ticket_id = ?`
+	deleteTicketQuery      = `DELETE FROM tickets WHERE id = ?`
 
 	// queries for select
 	selectByTicketIDQuery = `SELECT
@@ -47,5 +39,27 @@ const (
   WHERE
     t.id = ?
 ;
+`
+
+	selectAllTicketRelatedByGrantTicket = `SELECT
+    t.id,
+    tt.type,
+    t.client_hostname,
+    t.created_at,
+    tlr.last_referenced_at,
+    ts.service,
+    tu.username,
+    i.iou,
+    tea.extra_attribute
+  FROM tickets T
+    LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
+    LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
+    LEFT JOIN ticket_last_referenced tlr ON t.id = tlr.ticket_id
+    LEFT JOIN ticket_iou i ON t.id = i.ticket_id
+    LEFT JOIN ticket_username tu ON t.id = tu.ticket_id
+    LEFT JOIN ticket_extra_attribute tea ON t.id = tea.ticket_id
+    LEFT JOIN ticket_grant_ticket tgt ON t.id = tgt.destination_ticket_id
+  WHERE
+    tgt.source_ticket_id = ?
 `
 )

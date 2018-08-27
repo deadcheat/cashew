@@ -20,11 +20,17 @@ type LoginUseCase interface {
 	TerminateLoginTicket(*Ticket) error
 }
 
+// LogoutUseCase define behaviors for logout by tgt
+type LogoutUseCase interface {
+	Terminate(*Ticket) error
+}
+
 // TicketRepository repository for ticket
 type TicketRepository interface {
 	Find(id string) (*Ticket, error)
-	Delete(t *Ticket) error
-	Create(t *Ticket) error
+	Delete(*Ticket) error
+	DeleteRelatedTicket(*Ticket) error
+	Create(*Ticket) error
 }
 
 // IDRepository is an interface to issue an ID
