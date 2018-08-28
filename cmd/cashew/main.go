@@ -8,6 +8,7 @@ import (
 
 	"github.com/deadcheat/cashew/deliver/assets"
 	dl "github.com/deadcheat/cashew/deliver/login"
+	dv "github.com/deadcheat/cashew/deliver/validate"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/repository/host"
 	"github.com/deadcheat/cashew/repository/id"
@@ -15,6 +16,7 @@ import (
 	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
 	"github.com/deadcheat/cashew/usecase/logout"
+	"github.com/deadcheat/cashew/usecase/validate"
 
 	"github.com/gorilla/mux"
 )
@@ -53,6 +55,9 @@ func main() {
 	authUseCase := auth.New()
 	login := dl.New(r, loginUseCase, logoutUseCase, authUseCase)
 	login.Mount()
+	validateUseCase := validate.New(ticketRepository)
+	v := dv.New(r, validateUseCase)
+	v.Mount()
 
 	// mount to static files
 	statics := assets.New(r)

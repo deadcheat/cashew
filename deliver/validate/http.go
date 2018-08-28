@@ -41,7 +41,7 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 		foundUser = t.UserName
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	if _, err = fmt.Fprintf(w, "%s\n\n%s", isValidated, foundUser); err != nil {
+	if _, err = fmt.Fprintf(w, "%s\n%s\n", isValidated, foundUser); err != nil {
 		http.Error(w, "failed to show response", http.StatusInternalServerError)
 	}
 }
