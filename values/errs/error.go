@@ -32,4 +32,7 @@ var (
 
 	// ErrMultipleUserFound defined error when multiple users matched identification
 	ErrMultipleUserFound = errors.New("there are many users to match user/password")
+
+	// ErrServiceURLNotMatched defined error that service url is not matched granted one
+	ErrServiceURLNotMatched = errors.New("ticket grant other service not this")
 )
