@@ -14,6 +14,7 @@ import (
 	"github.com/deadcheat/cashew/repository/ticket"
 	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
+	"github.com/deadcheat/cashew/usecase/logout"
 
 	"github.com/gorilla/mux"
 )
@@ -48,8 +49,9 @@ func main() {
 	idRepository := id.New()
 	hostRepository := host.New()
 	loginUseCase := login.New(ticketRepository, idRepository, hostRepository)
+	logoutUseCase := logout.New(ticketRepository)
 	authUseCase := auth.New()
-	login := dl.New(r, loginUseCase, authUseCase)
+	login := dl.New(r, loginUseCase, logoutUseCase, authUseCase)
 	login.Mount()
 
 	// mount to static files

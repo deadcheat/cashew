@@ -3,6 +3,8 @@ package ticket
 import (
 	"database/sql"
 
+	"github.com/deadcheat/cashew/values/errs"
+
 	"github.com/deadcheat/cashew"
 )
 
@@ -25,7 +27,13 @@ func (r *Repository) Create(t *cashew.Ticket) error {
 
 // Delete from all ticket-related table and ticket table
 func (r *Repository) Delete(t *cashew.Ticket) error {
-	return r.executeOnNewTx(deleteAccessors, t)
+	switch t.Type {
+	case cashew.TicketTypeTicketGranting, cashew.TicketTypeProxyGranting:
+		return r.executeOnNewTx(deleteGrantingTicketAccessors, t)
+	case cashew.TicketTypeLogin, cashew.TicketTypeService:
+		return r.executeOnNewTx(deleteServiceAccessors, t)
+	}
+	return errs.ErrInvalidTicketType
 }
 
 func (r *Repository) executeOnNewTx(accessors []ticketAccessor, t *cashew.Ticket) (err error) {
@@ -193,8 +201,12 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 	return ts, nil
 }
 
-func (r *Repository) deleteWithTx(tx *sql.Tx, t *cashew.Ticket) error {
-	return r.executeWithTx(tx, deleteAccessors, t)
+func (r *Repository) deleteServiceTicket(tx *sql.Tx, t *cashew.Ticket) error {
+	return r.executeWithTx(tx, deleteServiceAccessors, t)
+}
+
+func (r *Repository) deleteGrantingTicket(tx *sql.Tx, t *cashew.Ticket) error {
+	return r.executeWithTx(tx, deleteGrantingTicketAccessors, t)
 }
 
 // DeleteRelatedTicket search for new ticket by ticket id
@@ -212,12 +224,12 @@ func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
 	// delete all tickets
 	for i := range ts {
 		ti := ts[i]
-		err = r.deleteWithTx(tx, ti)
+		err = r.deleteServiceTicket(tx, ti)
 		if err != nil {
 			return
 		}
 	}
 	// finally, delete ticket granting ticket
-	r.deleteWithTx(tx, t)
+	r.deleteGrantingTicket(tx, t)
 	return tx.Commit()
 }

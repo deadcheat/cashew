@@ -146,7 +146,7 @@ func serviceURL(v url.Values) (*url.URL, error) {
 }
 
 func continueURL(v url.Values) (*url.URL, error) {
-	urls := v[consts.ParamKeyService]
+	urls := v[consts.ParamKeyURL]
 	nextURL := firstString(urls)
 	// enable only first url
 	// if serviceURL is empty, return nil, nil
@@ -231,16 +231,6 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	u = strings.Trim(u, " ")
 
 	var lt *cashew.Ticket
-	// delete login ticket
-	// if it failed, ignore that instantly
-	defer func() {
-		if lt != nil {
-			return
-		}
-		if internalErr := d.uc.TerminateLoginTicket(lt); internalErr != nil {
-			log.Println("login ticket deletion internal error ", internalErr)
-		}
-	}()
 	lt, err = d.uc.FindTicket(l)
 	if err != nil {
 		// FIXME redirect to /login with service url
@@ -248,7 +238,17 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
 		return
 	}
-
+	fmt.Println("terminate loginticket: ", lt.ID)
+	// delete login ticket
+	// if it failed, ignore that instantly
+	defer func() {
+		if lt == nil {
+			return
+		}
+		if internalErr := d.uc.TerminateLoginTicket(lt); internalErr != nil {
+			log.Println("login ticket deletion internal error ", internalErr)
+		}
+	}()
 	if err = d.uc.ValidateTicket(cashew.TicketTypeLogin, lt); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
@@ -337,8 +337,6 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to find ticket granting ticket in cookie", http.StatusBadRequest)
 		return
 	}
-	// delete cookie
-	http.SetCookie(w, nil)
 	tgtID := tgc.Value
 	var tgt *cashew.Ticket
 	tgt, err = d.uc.FindTicket(tgtID)
@@ -348,6 +346,8 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// delete cookie
+	http.SetCookie(w, nil)
 	if stringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return

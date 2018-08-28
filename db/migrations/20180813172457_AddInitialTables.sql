@@ -10,7 +10,7 @@ CREATE TABLE tickets
 )
 DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
 COMMENT 'all tickets are not classified by their types';
-CREATE UNIQUE INDEX tickets_id_uindex ON tickets (id);
+CREATE UNIQUE INDEX udx_tickets_id ON tickets (id);
 
 -- tickets_service
 CREATE TABLE ticket_service
@@ -87,7 +87,8 @@ COMMENT '';
 -- ticket_grant_ticket
 CREATE TABLE ticket_grant_ticket
 (
-    source_ticket_id varchar(256) PRIMARY KEY NOT NULL COMMENT 'ticket id has granted',
+    id varchar(256) PRIMARY KEY NOT NULL COMMENT 'granting id',
+    source_ticket_id varchar(256)  NOT NULL COMMENT 'ticket id has granted',
     destination_ticket_id varchar(256) NOT NULL COMMENT 'ticket id has been granted',
     created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'created datetime',
     CONSTRAINT fk_ticket_grant_ticket_tickets_as_source FOREIGN KEY (source_ticket_id) REFERENCES tickets (id),
@@ -95,14 +96,14 @@ CREATE TABLE ticket_grant_ticket
 )
 DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
 COMMENT 'ticket id that grant other ticket';
-CREATE UNIQUE INDEX ticket_grant_ticket_id_uindex ON ticket_grant_ticket (id);
+CREATE UNIQUE INDEX udx_ticket_grant_id ON ticket_grant_ticket (id);
 
 -- +goose Down
 -- SQL section 'Down' is executed when this migration is rolled back
 DROP TABLE ticket_grant_ticket;
 DROP TABLE ticket_extra_attribute;
 DROP TABLE ticket_iou;
-DROP TABLE ticket_expires;
+DROP TABLE ticket_last_referenced;
 DROP TABLE ticket_username;
 DROP TABLE ticket_type;
 DROP TABLE ticket_service;

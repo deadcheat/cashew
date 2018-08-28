@@ -8,6 +8,8 @@ const (
 const (
 	// ParamKeyService key string for param
 	ParamKeyService = "service"
+	// ParamKeyURL key string for param
+	ParamKeyURL = "url"
 	// ParamKeyRenew key string for param
 	ParamKeyRenew = "renew"
 	// ParamKeyGateway key string for param

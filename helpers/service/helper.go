@@ -16,12 +16,10 @@ func NormalizeURL(u string) (*url.URL, error) {
 	if err != nil {
 		return nil, err
 	}
-	// fmt.Println(urlStr)
 	urlVal, err := url.Parse(urlStr)
 	if err != nil {
 		return nil, err
 	}
-	// fmt.Printf("%#v", urlVal)
 	urlVal.RawQuery = urlVal.Query().Encode()
 	return url.Parse(purell.NormalizeURL(urlVal, purell.FlagsAllGreedy))
 }

@@ -9,14 +9,21 @@ import (
 )
 
 // deleters
-var deleteAccessors = []ticketAccessor{
+var deleteServiceAccessors = []ticketAccessor{
 	deleteAllRelatedTables,
+	deleteGrantedServiceTicket,
+	deleteTicket,
+}
+
+// deleters
+var deleteGrantingTicketAccessors = []ticketAccessor{
+	deleteAllRelatedTables,
+	deleteGrantingTicket,
 	deleteTicket,
 }
 
 const (
 	ticketExtraAttributes = "ticket_extra_attribute"
-	ticketGrantTicket     = "ticket_grant_ticket"
 	ticketIOU             = "ticket_iou"
 	ticketLastReferenced  = "ticket_last_referenced"
 	ticketService         = "ticket_service"
@@ -27,7 +34,6 @@ const (
 var (
 	ticketRelatedTables = []string{
 		ticketExtraAttributes,
-		ticketGrantTicket,
 		ticketIOU,
 		ticketLastReferenced,
 		ticketService,
@@ -42,7 +48,7 @@ var (
 		for i := range ticketRelatedTables {
 			err := func() error {
 				log.Printf("delete from %s", ticketRelatedTables[i])
-				stmt, err := tx.Prepare(fmt.Sprintf(deleteSomeRelatedTable, ticketRelatedTables[i]))
+				stmt, err := tx.Prepare(fmt.Sprintf(deleteSomeRelatedTableQeury, ticketRelatedTables[i]))
 				if err != nil {
 					return err
 				}
@@ -55,6 +61,29 @@ var (
 			}
 		}
 		return nil
+	}
+	// delete  granted service ticeket
+	deleteGrantedServiceTicket ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
+		stmt, err := tx.Prepare(deleteGrantedServiceTicketQeury)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+
+		_, err = stmt.Exec(t.ID)
+		return err
+	}
+
+	// delete  granting ticeket relation
+	deleteGrantingTicket ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
+		stmt, err := tx.Prepare(deleteGrantingTicketQeury)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+
+		_, err = stmt.Exec(t.ID)
+		return err
 	}
 
 	//  ticket delete by this

@@ -4,7 +4,7 @@ const (
 	// queries for insert
 	createTicketQuery                = `INSERT INTO tickets (id, client_hostname, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketTypeQuery            = `INSERT INTO ticket_type (ticket_id, type, created_at) VALUES (?, ?, DEFAULT)`
-	createTicketGrantQuery           = `INSERT INTO ticket_grant_ticket (source_ticket_id, destination_ticket_id, created_at) VALUES (?, ?,DEFAULT)`
+	createTicketGrantQuery           = `INSERT INTO ticket_grant_ticket (id, source_ticket_id, destination_ticket_id, created_at) VALUES (?, ?, ?,DEFAULT)`
 	createTicketServiceQuery         = `INSERT INTO ticket_service (ticket_id, service, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketUsernameQuery        = `INSERT INTO ticket_username (ticket_id, username, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketIOUQuery             = `INSERT INTO ticket_iou (ticket_id, iou, created_at) VALUES (?, ?, DEFAULT)`
@@ -12,8 +12,10 @@ const (
 	createTicketExtraAttributesQuery = `INSERT INTO ticket_extra_attribute (ticket_id, extra_attribute, created_at) VALUES (?, ?, DEFAULT)`
 
 	// queries for delete
-	deleteSomeRelatedTable = `DELETE FROM %s WHERE ticket_id = ?`
-	deleteTicketQuery      = `DELETE FROM tickets WHERE id = ?`
+	deleteSomeRelatedTableQeury     = `DELETE FROM %s WHERE ticket_id = ?`
+	deleteGrantedServiceTicketQeury = `DELETE FROM ticket_grant_ticket WHERE destination_ticket_id = ?`
+	deleteGrantingTicketQeury       = `DELETE FROM ticket_grant_ticket WHERE source_ticket_id = ?`
+	deleteTicketQuery               = `DELETE FROM tickets WHERE id = ?`
 
 	// queries for select
 	selectByTicketIDQuery = `SELECT

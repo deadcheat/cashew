@@ -103,6 +103,9 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
 }
 
 func (a *Authenticator) validate(secret string, user *user) error {
+	if user == nil {
+		return errs.ErrInvalidCredentials
+	}
 	base := fmt.Sprintf("%s::%s", user.salt, secret)
 	crypt := fmt.Sprintf("%x", sha256.Sum256([]byte(base)))
 	if user.pass != crypt {

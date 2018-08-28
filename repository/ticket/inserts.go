@@ -6,6 +6,7 @@ import (
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/timer"
 	"github.com/deadcheat/cashew/values/errs"
+	"github.com/rs/xid"
 )
 
 // inserter list
@@ -139,7 +140,7 @@ var (
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(t.GrantedBy.ID, t.ID)
+		_, err = stmt.Exec(xid.New().String(), t.GrantedBy.ID, t.ID)
 		return err
 	}
 )

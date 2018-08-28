@@ -15,17 +15,16 @@
 <body>
     <section class="hero is-success is-fullheight">
         <div class="hero-body">
+            <div class="column is-4 is-offset-4">
+                <h3 class="title has-text-grey">istyle Central Login</h3>
+            </div>
             <div class="container has-text-centered">
                 <article class="message is-info">
-                    <div class="message-header">
-                        <p>Message</p>
-                        <button class="delete" aria-label="delete"></button>
-                    </div>
                     <div class="message-body">
                         You have successfully logged out. Please click on the following link to continue:
                     </div>
                 </article>
-                <a href="{{ .Next }}"></a>
+                <a href="{{ .Next }}">{{ .Next }}</a>
             </div>
         </div>
     </section>
