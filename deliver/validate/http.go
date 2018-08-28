@@ -2,10 +2,12 @@ package validate
 
 import (
 	"fmt"
+	"log"
 	"net/http"
-	"net/url"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/helpers/params"
+	"github.com/deadcheat/cashew/helpers/strings"
 	"github.com/gorilla/mux"
 )
 
@@ -24,16 +26,25 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 	isValidated := "no"
 	foundUser := ""
 
-	ticket := ""
-	service := new(url.URL)
+	p := r.URL.Query()
+	svc, err := params.ServiceURL(p)
+	if err != nil {
+		log.Println(err)
+		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
+		return
+	}
+	ticket := strings.FirstString(p["ticket"])
 
-	t, err := d.uc.Validate(ticket, service)
+	t, err := d.uc.Validate(ticket, svc)
 	if err == nil {
 		isValidated = "yes"
 		foundUser = t.UserName
 	}
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "%s\n\n%s", isValidated, foundUser)
+	if _, err = fmt.Fprintf(w, "%s\n\n%s", isValidated, foundUser); err != nil {
+		http.Error(w, "failed to show response", http.StatusInternalServerError)
+	}
+	return
 }
 
 // Mount route with handler
