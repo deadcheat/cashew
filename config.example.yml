@@ -55,6 +55,8 @@ ticket_number_of_each_users: 20
 #     table: users
 #     user_name_column: admin
 #     password_column: password
+### if you use salt for authentication, write your salt-column
+#     salt_column: salt
 
 ### Log Setting
 ### NOTE: This doesn't work correctly yet.
