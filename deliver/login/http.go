@@ -271,7 +271,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:  consts.CookieKeyTGT,
 		Value: tgt.ID,
-		Path:  filepath.Join("/", foundation.App().BasePath),
+		Path:  filepath.Join("/", foundation.App().URIPath),
 	})
 
 	var st *cashew.Ticket

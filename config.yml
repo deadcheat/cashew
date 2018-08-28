@@ -10,9 +10,24 @@ ssl: false
 host: 127.0.0.1
 port: 3000
 
+### GrantingDefaultExpire is seconds from last used for deletion ticket
+### This value will be set as second.
+### (T|P)GT will expires 7,200s (2 hour) as default.
+### If you want to use infinite expire policy, set 0
+granting_default_expire: 7200
+
+# Also, TGT will be timed-up in 28,800s (8 hour) from creation
+# This parameter also can be infinity when set 0
+granting_hard_timeout: 28800
+
+### TicketNumberOfEachUsers is a threshold of tickets that users are allowed to create
+### This parameter is enabled only on ST/PT
+### Default value is 20
+ticket_number_of_each_users: 20
+
 ### specify uri_path if you want to change the root path
 ### cas server will be served
-# uri_path: /cas
+uri_path: /cas
 
 ### Database Setting
 ### Set up the database connection
@@ -38,7 +53,7 @@ authenticator:
       host: localhost
       port: 3306
     table: users
-    user_name_column: name
+    user_name_column: user
     password_column: password
 
 ### Log Setting
