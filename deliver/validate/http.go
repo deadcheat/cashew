@@ -44,7 +44,6 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 	if _, err = fmt.Fprintf(w, "%s\n\n%s", isValidated, foundUser); err != nil {
 		http.Error(w, "failed to show response", http.StatusInternalServerError)
 	}
-	return
 }
 
 // Mount route with handler
