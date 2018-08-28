@@ -36,6 +36,7 @@ type TicketRepository interface {
 	Delete(*Ticket) error
 	DeleteRelatedTicket(*Ticket) error
 	Create(*Ticket) error
+	Consume(*Ticket) error
 }
 
 // IDRepository is an interface to issue an ID

@@ -93,7 +93,10 @@ var (
 	}
 	// inserter for ticket_expires
 	insertTicketLastReferenced ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeTicketGranting && t.Type != cashew.TicketTypeProxyGranting {
+		switch t.Type {
+		case cashew.TicketTypeTicketGranting, cashew.TicketTypeProxyGranting, cashew.TicketTypeService, cashew.TicketTypeProxy:
+			// do nothing
+		default:
 			return nil
 		}
 		// set automatically

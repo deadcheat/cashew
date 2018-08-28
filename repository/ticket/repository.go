@@ -3,6 +3,7 @@ package ticket
 import (
 	"database/sql"
 
+	"github.com/deadcheat/cashew/timer"
 	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
@@ -231,5 +232,35 @@ func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
 	}
 	// finally, delete ticket granting ticket
 	r.deleteGrantingTicket(tx, t)
+	return tx.Commit()
+}
+
+// Consume update last_referenced_time for ticket
+func (r *Repository) Consume(t *cashew.Ticket) (err error) {
+	if t == nil {
+		return errs.ErrInvalidMethodCall
+	}
+	// start tran
+	var tx *sql.Tx
+	tx, err = r.db.Begin()
+	if err != nil {
+		return
+	}
+	defer tx.Rollback()
+
+	var stmt *sql.Stmt
+	stmt, err = tx.Prepare(updateConsumeQuery)
+	if err != nil {
+		return
+	}
+	var res sql.Result
+	if res, err = stmt.Exec(timer.Local.Now(), t.ID); err != nil {
+		return
+	}
+	var count int64
+	count, err = res.RowsAffected()
+	if count == 0 {
+		return errs.ErrNoTicketID
+	}
 	return tx.Commit()
 }

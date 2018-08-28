@@ -17,6 +17,9 @@ const (
 	deleteGrantingTicketQeury       = `DELETE FROM ticket_grant_ticket WHERE source_ticket_id = ?`
 	deleteTicketQuery               = `DELETE FROM tickets WHERE id = ?`
 
+	// queries for update
+	updateConsumeQuery = `UPDATE ticket_last_referenced tlr (last_referenced_at) VALUES (?) WHERE tlr.ticket_id = ?`
+
 	// queries for select
 	selectByTicketIDQuery = `SELECT
     t.id,
