@@ -200,19 +200,24 @@ func (r *Repository) deleteWithTx(tx *sql.Tx, t *cashew.Ticket) error {
 // DeleteRelatedTicket search for new ticket by ticket id
 func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
 	var ts []*cashew.Ticket
+	// find all tickets granting this ticket
 	ts, err = r.findAllRelatedTicket(t.ID)
+	// start tran
 	var tx *sql.Tx
 	tx, err = r.db.Begin()
 	if err != nil {
 		return
 	}
 	defer tx.Rollback()
+	// delete all tickets
 	for i := range ts {
-		t := ts[i]
-		err = r.deleteWithTx(tx, t)
+		ti := ts[i]
+		err = r.deleteWithTx(tx, ti)
 		if err != nil {
 			return
 		}
 	}
+	// finally, delete ticket granting ticket
+	r.deleteWithTx(tx, t)
 	return tx.Commit()
 }

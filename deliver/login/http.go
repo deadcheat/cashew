@@ -28,14 +28,15 @@ import (
 
 // Deliver struct implements cashew.Deliver
 type Deliver struct {
-	r   *mux.Router
-	uc  cashew.LoginUseCase
-	auc cashew.AuthenticateUseCase
+	r    *mux.Router
+	uc   cashew.LoginUseCase
+	louc cashew.LogoutUseCase
+	auc  cashew.AuthenticateUseCase
 }
 
 // New make new Deliver
-func New(r *mux.Router, uc cashew.LoginUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
-	return &Deliver{r: r, uc: uc, auc: auc}
+func New(r *mux.Router, uc cashew.LoginUseCase, louc cashew.LogoutUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
+	return &Deliver{r: r, uc: uc, louc: louc, auc: auc}
 }
 
 // get handle GET request to /login
@@ -341,8 +342,7 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 	tgtID := tgc.Value
 	var tgt *cashew.Ticket
 	tgt, err = d.uc.FindTicket(tgtID)
-	// FIXME make and use that terminate granting ticket
-	if err = d.uc.TerminateLoginTicket(tgt); err != nil {
+	if err = d.louc.Terminate(tgt); err != nil {
 		log.Println(err)
 		http.Error(w, "failed to delete ticket granting ticket", http.StatusInternalServerError)
 		return
@@ -352,11 +352,28 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
 	}
-
 	if next != nil {
-		// TODO render logout display
+		tmp := template.New("cas logout")
+		var f *goblet.File
+		f, err = templates.Assets.File("/login/logout.html")
+		if err != nil {
+			return
+		}
+		// FIXME parse process should be done when app start
+		tmp, err = tmp.Parse(string(f.Data))
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		if err = tmp.Execute(w, map[string]interface{}{
+			"Next": next.String(),
+		}); err != nil {
+			log.Println(err)
+			http.Error(w, "failed to show logout page", http.StatusInternalServerError)
+			return
+		}
+		return
 	}
 	// finally render login display
+	mp.AddInfo("You're successfully logged out.")
 	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 	if err != nil {
 		log.Println(err)
