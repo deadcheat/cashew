@@ -30,5 +30,8 @@ func (u *UseCase) Validate(ticket string, service *url.URL) (t *cashew.Ticket, e
 	if t.Service != service.String() {
 		return nil, errs.ErrServiceURLNotMatched
 	}
+	if err = u.r.Consume(t); err != nil {
+		return
+	}
 	return
 }
