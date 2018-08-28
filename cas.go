@@ -25,6 +25,11 @@ type LogoutUseCase interface {
 	Terminate(*Ticket) error
 }
 
+// ValidateUseCase define behaviors for validation
+type ValidateUseCase interface {
+	Validate(t *Ticket, service *url.URL) error
+}
+
 // TicketRepository repository for ticket
 type TicketRepository interface {
 	Find(id string) (*Ticket, error)

@@ -14,14 +14,14 @@ import (
 
 	"github.com/deadcheat/goblet"
 
+	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/foundation"
+	"github.com/deadcheat/cashew/helpers/params"
+	hs "github.com/deadcheat/cashew/helpers/strings"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
-	"github.com/deadcheat/cashew/values/errs"
-
-	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/helpers/service"
 	"github.com/deadcheat/cashew/values/consts"
+	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/gorilla/mux"
 )
@@ -47,8 +47,8 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 
 	setHeaderNoCache(w)
 
-	params := r.URL.Query()
-	svc, err := serviceURL(params)
+	p := r.URL.Query()
+	svc, err := params.ServiceURL(p)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
@@ -56,7 +56,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// check renew and if renew, redirect to login page
-	renews := params[consts.ParamKeyRenew]
+	renews := p[consts.ParamKeyRenew]
 	if stringSliceContainsTrue(renews) {
 		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
 		if err != nil {
@@ -66,7 +66,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	gateways := params[consts.ParamKeyGateway]
+	gateways := p[consts.ParamKeyGateway]
 	if stringSliceContainsTrue(gateways) {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
@@ -137,22 +137,6 @@ func setHeaderNoCache(w http.ResponseWriter) {
 	w.Header().Set("Expires", time.Now().Add(time.Hour*720).Format(consts.RFC2822))
 }
 
-func serviceURL(v url.Values) (*url.URL, error) {
-	services := v[consts.ParamKeyService]
-	serviceURL := firstString(services)
-	// enable only first url
-	// if serviceURL is empty, return nil, nil
-	return service.NormalizeURL(serviceURL)
-}
-
-func continueURL(v url.Values) (*url.URL, error) {
-	urls := v[consts.ParamKeyURL]
-	nextURL := firstString(urls)
-	// enable only first url
-	// if serviceURL is empty, return nil, nil
-	return service.NormalizeURL(nextURL)
-}
-
 func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.URL, loggedIn bool, username, password string, messages []string, errors []string, sc int) (err error) {
 	service := ""
 	if svc != nil {
@@ -213,10 +197,10 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	params := r.Form
+	p := r.Form
 
 	var svc *url.URL
-	svc, err = serviceURL(params)
+	svc, err = params.ServiceURL(p)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
@@ -224,9 +208,9 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// get required parameters
-	u := firstString(params["username"])
-	p := firstString(params["password"])
-	l := firstString(params["lt"])
+	u := hs.FirstString(p["username"])
+	pa := hs.FirstString(p["password"])
+	l := hs.FirstString(p["lt"])
 
 	u = strings.Trim(u, " ")
 
@@ -238,7 +222,6 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
 		return
 	}
-	fmt.Println("terminate loginticket: ", lt.ID)
 	// delete login ticket
 	// if it failed, ignore that instantly
 	defer func() {
@@ -257,11 +240,11 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// authenticate
-	if err = d.auc.Authenticate(u, p); err != nil {
+	if err = d.auc.Authenticate(u, pa); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		mp.AddErr("your authentication is invalid")
-		err = d.showLoginPage(w, r, svc, false, u, p, mp.Info(), mp.Errors(), http.StatusUnauthorized)
+		err = d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusUnauthorized)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show page", http.StatusInternalServerError)
@@ -324,11 +307,11 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 	var err error
 	mp := message.New()
 
-	params := r.URL.Query()
+	p := r.URL.Query()
 	// FIXME i might check err
-	svc, _ := serviceURL(params)
-	next, _ := continueURL(params)
-	gateways := params[consts.ParamKeyGateway]
+	svc, _ := params.ServiceURL(p)
+	next, _ := params.ContinueURL(p)
+	gateways := p[consts.ParamKeyGateway]
 
 	var tgc *http.Cookie
 	tgc, err = r.Cookie(consts.CookieKeyTGT)
@@ -399,11 +382,4 @@ func (d *Deliver) Mount() {
 	d.r.HandleFunc("/logout", d.logout).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.get).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.post).Methods(http.MethodPost)
-}
-
-func firstString(s []string) string {
-	if len(s) > 0 {
-		return s[0]
-	}
-	return ""
 }
