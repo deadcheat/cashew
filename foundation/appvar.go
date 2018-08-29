@@ -41,3 +41,8 @@ func DB() *sql.DB {
 func App() *setting.App {
 	return app
 }
+
+// Authenticator return predeclared authenticator
+func Authenticator() credential.Authenticator {
+	return authenticator
+}

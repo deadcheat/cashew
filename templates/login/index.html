@@ -5,81 +5,54 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Istyle CAS</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700" rel="stylesheet">
+    <title>login - istyle Central Login</title>
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/font-awesome.min.css">
     <!-- Bulma Version 0.7.1-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.1/css/bulma.min.css" />
-    <style type="text/css">
-        html,
-        body {
-            font-family: 'Open Sans', serif;
-            font-size: 14px;
-            font-weight: 300;
-        }
-
-        .hero.is-success {
-            background: #F2F6FA;
-        }
-
-        .hero .nav,
-        .hero.is-success .nav {
-            -webkit-box-shadow: none;
-            box-shadow: none;
-        }
-
-        .box {
-            margin-top: 5rem;
-        }
-
-        .avatar {
-            margin-top: -70px;
-            padding-bottom: 20px;
-        }
-
-        .avatar img {
-            padding: 5px;
-            background: #fff;
-            border-radius: 50%;
-            -webkit-box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
-            box-shadow: 0 2px 3px rgba(10, 10, 10, .1), 0 0 0 1px rgba(10, 10, 10, .1);
-        }
-
-        input {
-            font-weight: 300;
-        }
-
-        p {
-            font-weight: 700;
-        }
-
-        p.subtitle {
-            padding-top: 1rem;
-        }
-    </style>
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/bulma.min.css" />
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/base.css" />
 </head>
 
-<body>
+<body onload="if (document.getElementById('username')) document.getElementById('username').focus()">
     <section class="hero is-success is-fullheight">
+        {{ range $m := .Messages }}
+        <article class="message is-primary">
+            <div class="message-header">
+                <p>Message</p>
+                <button class="delete" aria-label="delete"></button>
+            </div>
+            <div class="message-body">
+                {{ $m }}
+            </div>
+        </article>
+        <br/> {{ end }} {{ range $m := .Errors }}
+        <article class="message is-danger">
+            <div class="message-header">
+                <p>Error</p>
+                <button class="delete" aria-label="delete"></button>
+            </div>
+            <div class="message-body">
+                {{ $m }}
+            </div>
+        </article><br/> {{ end }}
         <div class="hero-body">
             <div class="container has-text-centered">
+                {{ if not .LoggedIn }}
                 <div class="column is-4 is-offset-4">
-                    <h3 class="title has-text-grey">Login</h3>
+                    <h3 class="title has-text-grey">istyle Central Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
                     <div class="box">
-                        <!-- <figure class="avatar">
-                            <img src="https://placehold.it/128x128">
-                        </figure> -->
-                        <form method="post" action="/login">
+                        <form method="post" action="{{.URIPath}}/login">
                             <div class="field">
                                 <div class="control">
-                                    <input class="input is-large" name="username" type="text" placeholder="Your User Name" autofocus="" tabindex="1" accesskey="u">
+                                    <input class="input is-large" name="username" type="text" placeholder="Your User Name" autofocus="" tabindex="1" accesskey="u"
+                                        value="{{ .UserName }}">
                                 </div>
                             </div>
 
                             <div class="field">
                                 <div class="control">
-                                    <input class="input is-large" type="password" name="password" placeholder="Your Password" tabindex="2" accesskey="p" autocomplete="off">
+                                    <input class="input is-large" type="password" name="password" placeholder="Your Password" tabindex="2" accesskey="p" autocomplete="off"
+                                        value="{{ .Password }}">
                                 </div>
                             </div>
                             <div class="field">
@@ -87,14 +60,17 @@
                                     <input type="checkbox"> Remember me
                                 </label>
                             </div>
+                            <input type="hidden" name="lt" value="{{ .LoginTicket }}">
+                            <input type="hidden" name="service" value="{{ .Service }}">
                             <button class="button is-block is-info is-large is-fullwidth">Login</button>
                         </form>
                     </div>
                 </div>
+                {{ else }}
+                <img src="{{.URIPath}}/assets/images/success.jpg" alt=""> {{ end }}
             </div>
         </div>
     </section>
-    <script async type="text/javascript" src="../js/bulma.js"></script>
 </body>
 
 </html>

@@ -27,36 +27,34 @@ ticket_number_of_each_users: 20
 
 ### specify uri_path if you want to change the root path
 ### cas server will be served
-# uri_path: /cas
+uri_path: /cas
 
 ### Database Setting
 ### Set up the database connection
 ### NOTE: This doesn't work correctly yet.
-# database:
-#   driver: mysql
-#   name: casdb
-#   user: casuser
-#   pass: password
-#   host: localhost
-#   port: 3306
+database:
+  driver: mysql
+  name: casdb
+  user: casuser
+  pass: password
+  host: localhost
+  port: 3306
 
 ### Authenticator Setting
 ### NOTE: This doesn't work correctly yet.
-# authenticator:
-#   driver: database
-#   dbauth:
-#     database:
-#       driver: mysql
-#       name: roledb
-#       user: roleuser
-#       pass: rolepass
-#       host: localhost
-#       port: 3306
-#     table: users
-#     user_name_column: admin
-#     password_column: password
-### if you use salt for authentication, write your salt-column
-#     salt_column: salt
+authenticator:
+  driver: database
+  dbauth:
+    database:
+      driver: mysql
+      name: authexample
+      user: authuser
+      pass: password
+      host: localhost
+      port: 3306
+    table: users
+    user_name_column: user
+    password_column: password
 
 ### Log Setting
 ### NOTE: This doesn't work correctly yet.

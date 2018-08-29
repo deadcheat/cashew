@@ -35,7 +35,7 @@
 
 [[constraint]]
   name = "github.com/deadcheat/goblet"
-  version = "1.0.0"
+  version = "1.0.2"
 
 [[constraint]]
   name = "gopkg.in/yaml.v2"
@@ -44,3 +44,11 @@
 [[constraint]]
   name = "github.com/go-sql-driver/mysql"
   version = "1.4.0"
+
+[[constraint]]
+  name = "github.com/rs/xid"
+  version = "1.2.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/tomasen/realip"

@@ -2,35 +2,54 @@ package cashew
 
 import (
 	"net/http"
+	"net/url"
 )
 
 // Deliver delivery interface
 type Deliver interface {
 	Mount()
-	GetLogin(w http.ResponseWriter, r *http.Request)
-	PostLogin(w http.ResponseWriter, r *http.Request)
 }
 
 // LoginUseCase define behaviors for Cas Server
 type LoginUseCase interface {
-	ValidateTicket(ticketType TicketType, id string) error
-	ServiceTicket(service string) (*Ticket, error)
-	Login() error
+	FindTicket(id string) (*Ticket, error)
+	ValidateTicket(TicketType, *Ticket) error
+	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket) (*Ticket, error)
+	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
+	LoginTicket(r *http.Request) (*Ticket, error)
+	TerminateLoginTicket(*Ticket) error
+}
+
+// LogoutUseCase define behaviors for logout by tgt
+type LogoutUseCase interface {
+	Terminate(*Ticket) error
+}
+
+// ValidateUseCase define behaviors for validation
+type ValidateUseCase interface {
+	Validate(ticket string, service *url.URL) (*Ticket, error)
 }
 
 // TicketRepository repository for ticket
 type TicketRepository interface {
-	Issue(t TicketType) (*Ticket, error)
-	Find(t TicketType, id string) (*Ticket, error)
+	Find(id string) (*Ticket, error)
+	Delete(*Ticket) error
+	DeleteRelatedTicket(*Ticket) error
 	Create(*Ticket) error
+	Consume(*Ticket) error
+}
+
+// IDRepository is an interface to issue an ID
+type IDRepository interface {
+	Issue(t TicketType) string
+}
+
+// ClientHostNameRepository is an interface to find real-ip/hostname
+type ClientHostNameRepository interface {
+	Ensure(r *http.Request) string
 }
 
 // AuthenticateUseCase interface for authenticate
 type AuthenticateUseCase interface {
 	Authenticate(id, pass string) error
-}
-
-// AuthenticatedUserRepository repository interface for authenticate
-type AuthenticatedUserRepository interface {
-	Find(id, pass string) error
 }
