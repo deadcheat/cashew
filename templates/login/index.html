@@ -6,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>login - istyle Central Login</title>
-    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/font-awesome.min.css">
     <!-- Bulma Version 0.7.1-->
-    <link rel="stylesheet" href="/assets/css/bulma.min.css" />
-    <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/bulma.min.css" />
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/base.css" />
 </head>
 
 <body onload="if (document.getElementById('username')) document.getElementById('username').focus()">
@@ -41,7 +41,7 @@
                     <h3 class="title has-text-grey">istyle Central Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
                     <div class="box">
-                        <form method="post" action="/login">
+                        <form method="post" action="{{.URIPath}}/login">
                             <div class="field">
                                 <div class="control">
                                     <input class="input is-large" name="username" type="text" placeholder="Your User Name" autofocus="" tabindex="1" accesskey="u"
@@ -67,7 +67,7 @@
                     </div>
                 </div>
                 {{ else }}
-                <img src="/assets/images/success.jpg" alt=""> {{ end }}
+                <img src="{{.URIPath}}/assets/images/success.jpg" alt=""> {{ end }}
             </div>
         </div>
     </section>

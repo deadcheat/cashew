@@ -162,6 +162,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(sc)
 	return t.Execute(w, map[string]interface{}{
+		"URIPath":     foundation.App().URIPath,
 		"Service":     service,
 		"LoginTicket": ltID,
 		"Messages":    messages,
@@ -323,14 +324,21 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 	tgtID := tgc.Value
 	var tgt *cashew.Ticket
 	tgt, err = d.uc.FindTicket(tgtID)
-	if err = d.louc.Terminate(tgt); err != nil {
-		log.Println(err)
-		http.Error(w, "failed to delete ticket granting ticket", http.StatusInternalServerError)
-		return
+	if err == nil {
+		if err = d.louc.Terminate(tgt); err != nil {
+			log.Println(err)
+			http.Error(w, "failed to delete ticket granting ticket", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	// delete cookie
-	http.SetCookie(w, nil)
+	http.SetCookie(w, &http.Cookie{
+		Name:    consts.CookieKeyTGT,
+		Value:   "",
+		Path:    filepath.Join("/", foundation.App().URIPath),
+		Expires: time.Unix(0, 0),
+	})
 	if stringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
@@ -347,7 +355,8 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		if err = tmp.Execute(w, map[string]interface{}{
-			"Next": next.String(),
+			"URIPath": foundation.App().URIPath,
+			"Next":    next.String(),
 		}); err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show logout page", http.StatusInternalServerError)

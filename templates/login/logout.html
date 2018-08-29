@@ -6,10 +6,10 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>logout - istyle Central Login</title>
-    <link rel="stylesheet" href="/assets/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/font-awesome.min.css">
     <!-- Bulma Version 0.7.1-->
-    <link rel="stylesheet" href="/assets/css/bulma.min.css" />
-    <link rel="stylesheet" href="/assets/css/base.css" />
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/bulma.min.css" />
+    <link rel="stylesheet" href="{{.URIPath}}/assets/css/base.css" />
 </head>
 
 <body>
@@ -17,14 +17,14 @@
         <div class="hero-body">
             <div class="column is-4 is-offset-4">
                 <h3 class="title has-text-grey">istyle Central Login</h3>
-            </div>
-            <div class="container has-text-centered">
-                <article class="message is-info">
-                    <div class="message-body">
-                        You have successfully logged out. Please click on the following link to continue:
-                    </div>
-                </article>
-                <a href="{{ .Next }}">{{ .Next }}</a>
+                <div class="container has-text-centered">
+                    <article class="message is-info">
+                        <div class="message-body">
+                            You have successfully logged out. Please click on the following link to continue:
+                        </div>
+                    </article>
+                    <a class="is-size-3 has-text-grey" href="{{ .Next }}">{{ .Next }}</a>
+                </div>
             </div>
         </div>
     </section>

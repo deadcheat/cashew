@@ -2,11 +2,13 @@ package assets
 
 import (
 	"net/http"
+	"path/filepath"
 
 	"github.com/deadcheat/goblet"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/assets"
+	"github.com/deadcheat/cashew/foundation"
 
 	"github.com/gorilla/mux"
 )
@@ -25,5 +27,5 @@ func New(r *mux.Router) cashew.Deliver {
 
 // Mount mounts assetfiles
 func (d *Deliver) Mount() {
-	d.r.PathPrefix("/assets/").Handler(http.StripPrefix("/assets/", http.FileServer(d.fs)))
+	d.r.PathPrefix("/assets/").Handler(http.StripPrefix(filepath.Join(foundation.App().URIPath, "/assets/"), http.FileServer(d.fs)))
 }
