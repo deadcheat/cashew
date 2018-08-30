@@ -78,7 +78,13 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	var st *cashew.Ticket
 	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
 	if err == nil {
-		d.showServiceValidateXML(w, r, nil, err)
+		err = d.showServiceValidateXML(w, r, nil, err)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			log.Println(err)
+			http.Error(w, "failed to show xml", http.StatusInternalServerError)
+			return
+		}
 	}
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
@@ -86,7 +92,7 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		log.Println(err)
-		http.Error(w, "failed to show login page", http.StatusInternalServerError)
+		http.Error(w, "failed to show xml", http.StatusInternalServerError)
 	}
 }
 
