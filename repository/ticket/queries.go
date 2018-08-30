@@ -6,6 +6,7 @@ const (
 	createTicketTypeQuery            = `INSERT INTO ticket_type (ticket_id, type, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketGrantQuery           = `INSERT INTO ticket_grant_ticket (id, source_ticket_id, destination_ticket_id, created_at) VALUES (?, ?, ?,DEFAULT)`
 	createTicketServiceQuery         = `INSERT INTO ticket_service (ticket_id, service, created_at) VALUES (?, ?, DEFAULT)`
+	createTicketPrimaryQuery         = `INSERT INTO ticket_primary (ticket_id, created_at) VALUES (?, DEFAULT)`
 	createTicketUsernameQuery        = `INSERT INTO ticket_username (ticket_id, username, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketIOUQuery             = `INSERT INTO ticket_iou (ticket_id, iou, created_at) VALUES (?, ?, DEFAULT)`
 	createTicketLastReferencedQuery  = `INSERT INTO ticket_last_referenced (ticket_id, last_referenced_at, created_at) VALUES (?, ?, DEFAULT)`

@@ -8,6 +8,7 @@ import (
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
+	"github.com/deadcheat/cashew/values/consts"
 	"github.com/gorilla/mux"
 )
 
@@ -35,7 +36,9 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 	}
 	ticket := strings.FirstString(p["ticket"])
 
-	t, err := d.uc.Validate(ticket, svc)
+	renews := p[consts.ParamKeyRenew]
+
+	t, err := d.uc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
 	if err == nil {
 		isValidated = "yes"
 		foundUser = t.UserName

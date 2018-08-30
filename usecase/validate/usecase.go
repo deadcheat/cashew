@@ -19,10 +19,13 @@ func New(r cashew.TicketRepository) cashew.ValidateUseCase {
 }
 
 // Validate execute validation service and ticket
-func (u *UseCase) Validate(ticket string, service *url.URL) (t *cashew.Ticket, err error) {
+func (u *UseCase) Validate(ticket string, service *url.URL, renew bool) (t *cashew.Ticket, err error) {
 	t, err = u.r.Find(ticket)
 	if err != nil {
 		return
+	}
+	if renew && !t.Primary {
+		return nil, errs.ErrServiceTicketIsNoPrimary
 	}
 	if t.Type != cashew.TicketTypeService {
 		return nil, errs.ErrTicketTypeNotMatched

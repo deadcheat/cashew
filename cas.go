@@ -27,7 +27,7 @@ type LogoutUseCase interface {
 
 // ValidateUseCase define behaviors for validation
 type ValidateUseCase interface {
-	Validate(ticket string, service *url.URL) (*Ticket, error)
+	Validate(ticket string, service *url.URL, renew bool) (*Ticket, error)
 }
 
 // TicketRepository repository for ticket

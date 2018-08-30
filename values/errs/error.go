@@ -35,4 +35,7 @@ var (
 
 	// ErrServiceURLNotMatched defined error that service url is not matched granted one
 	ErrServiceURLNotMatched = errors.New("ticket grant other service not this")
+
+	// ErrServiceTicketIsNoPrimary defined error that service ticket is not primary one
+	ErrServiceTicketIsNoPrimary = errors.New("ticket is not authenticated primary")
 )
