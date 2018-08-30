@@ -70,6 +70,11 @@ type user struct {
 	salt string
 }
 
+// Close implemented Closer to close inner stmt
+func (a *Authenticator) Close() error {
+	return stmt.Close()
+}
+
 // Authenticate implement method for auth.Authenticator
 func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
 	var r *sql.Rows
