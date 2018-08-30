@@ -31,6 +31,9 @@ type Ticket struct {
 	// required for proxy granting ticket
 	IOU string
 
+	// set true if this is service-ticket and primary
+	Primary bool
+
 	// required for ticket granting ticket, usually serialized json is set
 	ExtraAttributes interface{}
 }

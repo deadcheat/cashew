@@ -42,6 +42,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to prepare authenticator %+v \n", err)
 	}
+	defer foundation.Authenticator().Close()
 
 	// create router
 	r := mux.NewRouter().PathPrefix(foundation.App().URIPath).Subrouter()

@@ -41,7 +41,7 @@ func (u *UseCase) FindTicket(id string) (*cashew.Ticket, error) {
 }
 
 // ServiceTicket create new ServiceTicket
-func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.Ticket) (t *cashew.Ticket, err error) {
+func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.Ticket, primary bool) (t *cashew.Ticket, err error) {
 	if service == nil {
 		return nil, errs.ErrNoServiceDetected
 	}
@@ -52,6 +52,7 @@ func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.T
 	t.Service = service.String()
 	t.UserName = tgt.UserName
 	t.GrantedBy = tgt
+	t.Primary = primary
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}

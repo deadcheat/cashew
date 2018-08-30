@@ -73,6 +73,16 @@ DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
 COMMENT 'iou for ticket. this will be used when ticket is proxy granting ticket';
 CREATE INDEX idx_ticket_iou_iou ON ticket_iou (iou);
 
+-- ticket_primary
+CREATE TABLE ticket_primary
+(
+    ticket_id varchar(256) NOT NULL COMMENT 'ticket id',
+    created_at datetime DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT 'created datetime',
+    CONSTRAINT fk_ticket_primary_tickets FOREIGN KEY (ticket_id) REFERENCES tickets (id)
+)
+DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
+COMMENT 'holds ticket is primary or not, only on service ticket';
+
 -- ticket_extra_attribute
 CREATE TABLE ticket_extra_attribute
 (
@@ -82,7 +92,7 @@ CREATE TABLE ticket_extra_attribute
     CONSTRAINT fk_ticket_extra_attribute_tickets FOREIGN KEY (ticket_id) REFERENCES tickets (id)
 )
 DEFAULT CHARSET utf8mb4 COLLATE utf8mb4_bin
-COMMENT '';
+COMMENT 'ticket extra attributes';
 
 -- ticket_grant_ticket
 CREATE TABLE ticket_grant_ticket

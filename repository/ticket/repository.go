@@ -3,7 +3,6 @@ package ticket
 import (
 	"database/sql"
 
-	"github.com/deadcheat/cashew/timer"
 	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/deadcheat/cashew"
@@ -143,6 +142,7 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 	if err != nil {
 		return
 	}
+	defer stmt.Close()
 	var rows *sql.Rows
 	rows, err = stmt.Query(id)
 	if err != nil {
@@ -248,19 +248,31 @@ func (r *Repository) Consume(t *cashew.Ticket) (err error) {
 	}
 	defer tx.Rollback()
 
-	var stmt *sql.Stmt
-	stmt, err = tx.Prepare(updateConsumeQuery)
+	var findStmt *sql.Stmt
+	findStmt, err = tx.Prepare(selectConsumedQuery)
 	if err != nil {
 		return
 	}
-	var res sql.Result
-	if res, err = stmt.Exec(timer.Local.Now(), t.ID); err != nil {
+	defer findStmt.Close()
+	var rows *sql.Rows
+	rows, err = findStmt.Query(t.ID)
+	if err != nil {
 		return
 	}
-	var count int64
-	count, err = res.RowsAffected()
-	if count == 0 {
-		return errs.ErrNoTicketID
+	defer rows.Close()
+
+	found := rows.Next()
+	if rows.Err() != nil {
+		return
+	}
+	accessor := insertTicketLastReferenced
+	if found {
+		accessor = updateTicketLastReferenced
+	}
+	// insert when any records had not been found
+	err = accessor(tx, t)
+	if err != nil {
+		return
 	}
 	return tx.Commit()
 }

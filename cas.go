@@ -14,7 +14,7 @@ type Deliver interface {
 type LoginUseCase interface {
 	FindTicket(id string) (*Ticket, error)
 	ValidateTicket(TicketType, *Ticket) error
-	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket) (*Ticket, error)
+	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket, primary bool) (*Ticket, error)
 	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
 	LoginTicket(r *http.Request) (*Ticket, error)
 	TerminateLoginTicket(*Ticket) error
@@ -27,7 +27,7 @@ type LogoutUseCase interface {
 
 // ValidateUseCase define behaviors for validation
 type ValidateUseCase interface {
-	Validate(ticket string, service *url.URL) (*Ticket, error)
+	Validate(ticket string, service *url.URL, renew bool) (*Ticket, error)
 }
 
 // TicketRepository repository for ticket

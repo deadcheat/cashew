@@ -15,6 +15,7 @@ var insertAccessors = []ticketAccessor{
 	insertTicketType,
 	insertTicketService,
 	insertTicketGrant,
+	insertTicketPrimary,
 	insertTicketUserName,
 	insertTicketIOU,
 	insertTicketLastReferenced,
@@ -111,6 +112,24 @@ var (
 		defer stmt.Close()
 
 		_, err = stmt.Exec(t.ID, t.LastReferencedAt)
+		return err
+	}
+	// inserter for ticket_expires
+	insertTicketPrimary ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
+		// service ticket only
+		if t.Type != cashew.TicketTypeService {
+			return nil
+		}
+		// set only when primary is true
+		if !t.Primary {
+			return nil
+		}
+		stmt, err := tx.Prepare(createTicketPrimaryQuery)
+		if err != nil {
+			return err
+		}
+		defer stmt.Close()
+		_, err = stmt.Exec(t.ID)
 		return err
 	}
 

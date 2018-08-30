@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 
@@ -57,7 +56,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 
 	// check renew and if renew, redirect to login page
 	renews := p[consts.ParamKeyRenew]
-	if stringSliceContainsTrue(renews) {
+	if hs.StringSliceContainsTrue(renews) {
 		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
 		if err != nil {
 			log.Println(err)
@@ -67,7 +66,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	gateways := p[consts.ParamKeyGateway]
-	if stringSliceContainsTrue(gateways) {
+	if hs.StringSliceContainsTrue(gateways) {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
 	}
@@ -99,7 +98,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var st *cashew.Ticket
-			st, err = d.uc.ServiceTicket(r, svc, tgt)
+			st, err = d.uc.ServiceTicket(r, svc, tgt, false)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)
@@ -171,17 +170,6 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 		"UserName":    username,
 		"Password":    password,
 	})
-}
-
-// stringSliceContainsTrue return true when src []string contains any true-bool-string
-func stringSliceContainsTrue(src []string) bool {
-	for _, v := range src {
-		b, err := strconv.ParseBool(v)
-		if err == nil && b {
-			return true
-		}
-	}
-	return false
 }
 
 // post handle post method request to /login
@@ -276,7 +264,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	})
 
 	var st *cashew.Ticket
-	st, err = d.uc.ServiceTicket(r, svc, tgt)
+	st, err = d.uc.ServiceTicket(r, svc, tgt, true)
 	switch err {
 	case nil:
 		break
@@ -339,7 +327,7 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		Path:    filepath.Join("/", foundation.App().URIPath),
 		Expires: time.Unix(0, 0),
 	})
-	if stringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
+	if hs.StringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
 		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 		return
 	}

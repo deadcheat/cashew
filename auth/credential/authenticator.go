@@ -1,6 +1,9 @@
 package credential
 
-import "errors"
+import (
+	"errors"
+	"io"
+)
 
 var (
 	// ErrAuthenticateFailed 認証エラー
@@ -10,6 +13,7 @@ var (
 // Authenticator authentic interface
 type Authenticator interface {
 	Authenticate(c *Entity) error
+	io.Closer
 }
 
 // AuthenticationBuilder will prepare authenticator
