@@ -20,6 +20,9 @@ const (
 	// queries for update
 	updateConsumeQuery = `UPDATE ticket_last_referenced tlr (last_referenced_at) VALUES (?) WHERE tlr.ticket_id = ?`
 
+	// query for select last_referenced
+	selectConsumedQuery = `SELECT 1 FROM ticket_last_referenced tlr WHERE tlr.ticket_id = ?`
+
 	// queries for select
 	selectByTicketIDQuery = `SELECT
     t.id,
