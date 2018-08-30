@@ -2,13 +2,16 @@ package validate
 
 import (
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
+	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
+	"github.com/deadcheat/goblet"
 	"github.com/gorilla/mux"
 )
 
@@ -79,12 +82,28 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
-	d.showServiceValidateXML(w, r, pgt, err)
-	return
+	err = d.showServiceValidateXML(w, r, pgt, err)
+	if err != nil {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		log.Println(err)
+		http.Error(w, "failed to show login page", http.StatusInternalServerError)
+	}
 }
 
-func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, pgt *cashew.Ticket, err error) {
+func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, pgt *cashew.Ticket, e error) (err error) {
 
+	t := template.New("cas service validate")
+	var f *goblet.File
+	f, err = templates.Assets.File("/validate/servicevalidate.xml")
+	if err != nil {
+		return
+	}
+	t, err = t.Parse(string(f.Data))
+	if err != nil {
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	return t.Execute(w, map[string]interface{}{})
 }
 
 // Mount route with handler
