@@ -28,14 +28,15 @@ import (
 // Deliver struct implements cashew.Deliver
 type Deliver struct {
 	r    *mux.Router
-	uc   cashew.LoginUseCase
+	tuc  cashew.TicketUseCase
+	liuc cashew.LoginUseCase
 	louc cashew.LogoutUseCase
 	auc  cashew.AuthenticateUseCase
 }
 
 // New make new Deliver
-func New(r *mux.Router, uc cashew.LoginUseCase, louc cashew.LogoutUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
-	return &Deliver{r: r, uc: uc, louc: louc, auc: auc}
+func New(r *mux.Router, tuc cashew.TicketUseCase, liuc cashew.LoginUseCase, louc cashew.LogoutUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
+	return &Deliver{r: r, tuc: tuc, liuc: liuc, louc: louc, auc: auc}
 }
 
 // get handle GET request to /login
@@ -81,9 +82,9 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 
 	// redirect service with service ticket when tgt ticket is valid
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.FindTicket(tgtID)
+	tgt, err = d.tuc.FindTicket(tgtID)
 	if err == nil {
-		err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgt)
+		err = d.liuc.Validate(cashew.TicketTypeTicketGranting, tgt)
 		switch err {
 		case nil:
 			if svc == nil {
@@ -98,7 +99,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var st *cashew.Ticket
-			st, err = d.uc.ServiceTicket(r, svc, tgt, false)
+			st, err = d.tuc.ServiceTicket(r, svc, tgt, false)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)
@@ -144,7 +145,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	ltID := ""
 	if !loggedIn {
 		var lt *cashew.Ticket
-		lt, err = d.uc.LoginTicket(r)
+		lt, err = d.tuc.LoginTicket(r)
 		if err != nil {
 			return
 		}
@@ -204,7 +205,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	u = strings.Trim(u, " ")
 
 	var lt *cashew.Ticket
-	lt, err = d.uc.FindTicket(l)
+	lt, err = d.tuc.FindTicket(l)
 	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
@@ -217,11 +218,11 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		if lt == nil {
 			return
 		}
-		if internalErr := d.uc.TerminateLoginTicket(lt); internalErr != nil {
+		if internalErr := d.liuc.TerminateLogin(lt); internalErr != nil {
 			log.Println("login ticket deletion internal error ", internalErr)
 		}
 	}()
-	if err = d.uc.ValidateTicket(cashew.TicketTypeLogin, lt); err != nil {
+	if err = d.liuc.Validate(cashew.TicketTypeLogin, lt); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
@@ -249,7 +250,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
 		return
 	}
-	tgt, err = d.uc.TicketGrantingTicket(r, u, data)
+	tgt, err = d.tuc.TicketGrantingTicket(r, u, data)
 	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
@@ -264,7 +265,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	})
 
 	var st *cashew.Ticket
-	st, err = d.uc.ServiceTicket(r, svc, tgt, true)
+	st, err = d.tuc.ServiceTicket(r, svc, tgt, true)
 	switch err {
 	case nil:
 		break
@@ -311,7 +312,7 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 	}
 	tgtID := tgc.Value
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.FindTicket(tgtID)
+	tgt, err = d.tuc.FindTicket(tgtID)
 	if err == nil {
 		if err = d.louc.Terminate(tgt); err != nil {
 			log.Println(err)

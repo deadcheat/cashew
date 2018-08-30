@@ -10,14 +10,19 @@ type Deliver interface {
 	Mount()
 }
 
-// LoginUseCase define behaviors for Cas Server
-type LoginUseCase interface {
+// TicketUseCase define behaviors about finding and generating ticket
+type TicketUseCase interface {
 	FindTicket(id string) (*Ticket, error)
-	ValidateTicket(TicketType, *Ticket) error
+	LoginTicket(r *http.Request) (*Ticket, error)
+	ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st *Ticket) (*Ticket, error)
 	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket, primary bool) (*Ticket, error)
 	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
-	LoginTicket(r *http.Request) (*Ticket, error)
-	TerminateLoginTicket(*Ticket) error
+}
+
+// LoginUseCase define behaviors for Cas Server
+type LoginUseCase interface {
+	Validate(TicketType, *Ticket) error
+	TerminateLogin(*Ticket) error
 }
 
 // LogoutUseCase define behaviors for logout by tgt
