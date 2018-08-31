@@ -35,7 +35,8 @@ const (
     tu.username,
     i.iou,
     tea.extra_attribute,
-    gt.id granted_by
+    gt.id granted_by,
+    tp.ticket_id as has_primary
   FROM tickets T
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
     LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
@@ -45,6 +46,7 @@ const (
     LEFT JOIN ticket_extra_attribute tea ON t.id = tea.ticket_id
     LEFT JOIN ticket_grant_ticket tgt ON t.id = tgt.destination_ticket_id
     LEFT JOIN tickets gt ON tgt.source_ticket_id = gt.id
+    LEFT JOIN ticket_primary tp ON t.id = tp.ticket_id
   WHERE
     t.id = ?
 ;
@@ -59,7 +61,8 @@ const (
     ts.service,
     tu.username,
     i.iou,
-    tea.extra_attribute
+    tea.extra_attribute,
+    tp.ticket_id as has_primary
   FROM tickets T
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
     LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
@@ -68,6 +71,7 @@ const (
     LEFT JOIN ticket_username tu ON t.id = tu.ticket_id
     LEFT JOIN ticket_extra_attribute tea ON t.id = tea.ticket_id
     LEFT JOIN ticket_grant_ticket tgt ON t.id = tgt.destination_ticket_id
+    LEFT JOIN ticket_primary tp ON t.id = tp.ticket_id
   WHERE
     tgt.source_ticket_id = ?
 `

@@ -65,7 +65,6 @@ func (r *Repository) executeTicketAccessors(tx *sql.Tx, accessors []ticketAccess
 
 // Find search for new ticket by ticket id
 func (r *Repository) Find(id string) (*cashew.Ticket, error) {
-
 	stmt, err := r.db.Prepare(selectByTicketIDQuery)
 	if err != nil {
 		return nil, err
@@ -81,6 +80,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		userName        sql.NullString
 		iou             sql.NullString
 		extraAttributes interface{}
+		primaryTicket   sql.NullString
 	)
 	err = row.Scan(
 		&ticket.ID,
@@ -93,6 +93,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		&iou,
 		&extraAttributes,
 		&grantedBy,
+		&primaryTicket,
 	)
 	if err != nil {
 		return nil, err
@@ -132,6 +133,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		}
 	}
 
+	ticket.Primary = primaryTicket.Valid
 	return &ticket, nil
 }
 
@@ -158,6 +160,7 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			userName        sql.NullString
 			iou             sql.NullString
 			extraAttributes interface{}
+			primaryTicket   sql.NullString
 		)
 		err = rows.Scan(
 			&ticket.ID,
@@ -169,6 +172,7 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			&userName,
 			&iou,
 			&extraAttributes,
+			&primaryTicket,
 		)
 		if err != nil {
 			return nil, err
@@ -197,6 +201,8 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			tmp, _ := userName.Value()
 			ticket.UserName = tmp.(string)
 		}
+
+		ticket.Primary = primaryTicket.Valid
 		ts = append(ts, &ticket)
 	}
 	return ts, nil
@@ -254,20 +260,16 @@ func (r *Repository) Consume(t *cashew.Ticket) (err error) {
 		return
 	}
 	defer findStmt.Close()
-	var rows *sql.Rows
-	rows, err = findStmt.Query(t.ID)
-	if err != nil {
+	row := findStmt.QueryRow(t.ID)
+	var one int
+	err = row.Scan(&one)
+	accessor := updateTicketLastReferenced
+	switch err {
+	case nil:
+	case sql.ErrNoRows:
+		accessor = insertTicketLastReferenced
+	default:
 		return
-	}
-	defer rows.Close()
-
-	found := rows.Next()
-	if rows.Err() != nil {
-		return
-	}
-	accessor := insertTicketLastReferenced
-	if found {
-		accessor = updateTicketLastReferenced
 	}
 	// insert when any records had not been found
 	err = accessor(tx, t)
