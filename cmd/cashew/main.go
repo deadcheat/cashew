@@ -59,7 +59,7 @@ func main() {
 	login := dl.New(r, ticketUseCase, loginUseCase, logoutUseCase, authUseCase)
 	login.Mount()
 	validateUseCase := validate.New(ticketRepository)
-	v := dv.New(r, validateUseCase)
+	v := dv.New(r, ticketUseCase, validateUseCase)
 	v.Mount()
 
 	// mount to static files
