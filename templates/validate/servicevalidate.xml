@@ -1,7 +1,13 @@
 <cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .AuthenticationSuccess }}
     <cas:authenticationSuccess>
-        <cas:user>{{ .UserName }}</cas:user>
-        <cas:proxyGrantingTicket>{{ .ProxyGrantingTicket }}</cas:proxyGrantingTicket>
+        <cas:user>{{ .UserName }}</cas:user>{{ if .ProxyGranting }}
+        <cas:proxyGrantingTicket>{{ .ProxyGrantingTicketIOU }}</cas:proxyGrantingTicket>{{ end }}
+        {{ if .HasProxies }}
+        <cas:proxies>
+        {{ range $p := .Proxies }}
+        <cas:proxy>{{ $p }}</cas:proxy>
+        {{ end }}
+        </cas:proxies>{{ end }}
     </cas:authenticationSuccess>{{ else }}
     <cas:authenticationFailure code="{{ .ErrorCode }}">
         {{ .ErrorBody }}

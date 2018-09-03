@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/helpers/params"
@@ -74,11 +75,12 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	ticket := strings.FirstString(p["ticket"])
 	renews := p[consts.ParamKeyRenew]
-
+	var v view
 	var st *cashew.Ticket
 	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
 	if err == nil {
-		err = d.showServiceValidateXML(w, r, nil, err)
+		v.Err = err
+		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 			log.Println(err)
@@ -88,7 +90,9 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
-	err = d.showServiceValidateXML(w, r, pgt, err)
+	v.ProxyTicket = pgt
+	v.Err = err
+	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		log.Println(err)
@@ -96,7 +100,16 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, pgt *cashew.Ticket, e error) (err error) {
+type view struct {
+	AuthenticationSuccess bool
+	UserName              string
+	ProxyGranting         bool
+	ProxyTicket           *cashew.Ticket
+	Proxies               []*url.URL
+	Err                   error
+}
+
+func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
 
 	t := template.New("cas service validate")
 	var f *goblet.File
@@ -108,8 +121,25 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
+	iou := ""
+	if v.ProxyTicket != nil {
+		iou = v.ProxyTicket.IOU
+	}
+	c, b := handleError(v.Err)
 	w.WriteHeader(http.StatusOK)
-	return t.Execute(w, map[string]interface{}{})
+	return t.Execute(w, map[string]interface{}{
+		"AuthenticationSuccess":  v.AuthenticationSuccess,
+		"UserName":               v.UserName,
+		"ProxyGrantingTicketIOU": iou,
+		"HasProxies":             (len(v.Proxies) > 0),
+		"Proxies":                v.Proxies,
+		"ErrorCode":              c,
+		"ErrorBody":              b,
+	})
+}
+
+func handleError(err error) (string, string) {
+	return "", ""
 }
 
 // Mount route with handler
