@@ -54,6 +54,11 @@ type ClientHostNameRepository interface {
 	Ensure(r *http.Request) string
 }
 
+// ProxyCallBackRepository is an interface to dial proxy-callback-url
+type ProxyCallBackRepository interface {
+	Dial(u *url.URL, pgt, iou string) error
+}
+
 // AuthenticateUseCase interface for authenticate
 type AuthenticateUseCase interface {
 	Authenticate(id, pass string) error

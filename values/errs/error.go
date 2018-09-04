@@ -38,4 +38,7 @@ var (
 
 	// ErrServiceTicketIsNoPrimary defined error that service ticket is not primary one
 	ErrServiceTicketIsNoPrimary = errors.New("ticket is not authenticated primary")
+
+	// ErrProxyGrantingURLUnexpectedStatus defined error that pgt request is failed
+	ErrProxyGrantingURLUnexpectedStatus = errors.New("requested to PgtURL but response is unexpected status")
 )

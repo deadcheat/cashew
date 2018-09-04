@@ -13,11 +13,12 @@ type UseCase struct {
 	r   cashew.TicketRepository
 	idr cashew.IDRepository
 	chr cashew.ClientHostNameRepository
+	pcr cashew.ProxyCallBackRepository
 }
 
 // New return new usecase
-func New(r cashew.TicketRepository, idr cashew.IDRepository, chr cashew.ClientHostNameRepository) cashew.TicketUseCase {
-	return &UseCase{r, idr, chr}
+func New(r cashew.TicketRepository, idr cashew.IDRepository, chr cashew.ClientHostNameRepository, pcr cashew.ProxyCallBackRepository) cashew.TicketUseCase {
+	return &UseCase{r, idr, chr, pcr}
 }
 
 // FindTicket find ticket by id
@@ -47,13 +48,18 @@ func (u *UseCase) ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st 
 		return nil, errs.ErrNoServiceDetected
 	}
 	t = new(cashew.Ticket)
-	t.Type = cashew.TicketTypeService
+	t.Type = cashew.TicketTypeProxyGranting
 	t.ID = u.idr.Issue(t.Type)
+	t.IOU = u.idr.Issue(cashew.TicketTypeProxyGrantingIOU)
 	t.ClientHostName = u.chr.Ensure(r)
-	if err = u.r.Create(t); err != nil {
+
+	if err = u.pcr.Dial(callbackURL, t.ID, t.IOU); err != nil {
 		return nil, err
 	}
 
+	if err = u.r.Create(t); err != nil {
+		return
+	}
 	return
 }
 
