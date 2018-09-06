@@ -45,6 +45,7 @@ const (
 type Wrapper interface {
 	Code() string
 	Message() string
+	Is(ErrorCode) bool
 }
 
 // ErrorWrapper is hold error-code (what will be returned as xml)
@@ -77,6 +78,11 @@ func (w *wrapper) Code() string {
 // Message return message
 func (w *wrapper) Message() string {
 	return w.err.Error()
+}
+
+// Is return whether is errorcode same
+func (w *wrapper) Is(ec ErrorCode) bool {
+	return (w.errorCode == ec)
 }
 
 // New create with specified errorcode and error

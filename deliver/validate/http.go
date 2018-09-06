@@ -152,8 +152,14 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if v.Err != nil {
 		errCode = v.Err.Code()
 		errBody = v.Err.Message()
+		if v.Err.Is(errors.ErrorCodeInternalError) {
+			w.WriteHeader(http.StatusUnprocessableEntity)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
-	w.WriteHeader(http.StatusOK)
 	return t.Execute(w, map[string]interface{}{
 		"AuthenticationSuccess":  v.AuthenticationSuccess,
 		"UserName":               v.UserName,
