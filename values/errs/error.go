@@ -3,6 +3,8 @@ package errs
 import "errors"
 
 var (
+	// ErrRequiredParameterMissed request has been sent without rquired parameters
+	ErrRequiredParameterMissed = errors.New("required parameters are not satisfied")
 	// ErrNoServiceDetected error that request had no service url
 	ErrNoServiceDetected = errors.New("no service is detected")
 

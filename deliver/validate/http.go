@@ -8,10 +8,12 @@ import (
 	"net/url"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/helpers/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
+	"github.com/deadcheat/cashew/values/errs"
 	"github.com/deadcheat/goblet"
 	"github.com/gorilla/mux"
 )
@@ -59,27 +61,13 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	// serviceValidate will be rendered as utf-8 xml
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
 
-	p := r.URL.Query()
-	svc, err := params.ServiceURL(p)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
-		return
-	}
-
-	pgtURL, err := params.PgtURL(p)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "invalid url for query parameter 'pgtUrl'", http.StatusBadRequest)
-		return
-	}
-	ticket := strings.FirstString(p["ticket"])
-	renews := p[consts.ParamKeyRenew]
 	var v view
-	var st *cashew.Ticket
-	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
-	if err == nil {
-		v.Err = err
+	p := r.URL.Query()
+	// service and ticket are required parameter
+	ticket := strings.FirstString(p["ticket"])
+	svc, err := params.ServiceURL(p)
+	if err != nil || svc == nil || ticket == "" {
+		v.Err = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
 		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -87,11 +75,47 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "failed to show xml", http.StatusInternalServerError)
 			return
 		}
+		return
+	}
+
+	// pgtUrl is optional
+	pgtURL, err := params.PgtURL(p)
+	if err != nil {
+		log.Println("invalid url for query parameter 'pgtUrl'", err)
+	}
+	renews := p[consts.ParamKeyRenew]
+	var st *cashew.Ticket
+	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
+	if err != nil {
+		// diplay failed xml and finish process
+		switch err {
+		case errs.ErrServiceTicketIsNoPrimary, errs.ErrTicketTypeNotMatched:
+			v.Err = errors.NewInvalidTicket(err)
+		case errs.ErrServiceURLNotMatched:
+			v.Err = errors.NewInvalidService(err)
+		default:
+			v.Err = errors.NewInternalError(err)
+		}
+		err = d.showServiceValidateXML(w, r, v)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			log.Println(err)
+			http.Error(w, "failed to show xml", http.StatusInternalServerError)
+			return
+		}
+		return
 	}
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
 	v.ProxyTicket = pgt
-	v.Err = err
+	if err != nil {
+		switch err {
+		case errs.ErrProxyGrantingURLUnexpectedStatus:
+			v.Err = errors.NewInvalidProxyCallback(err)
+		default:
+			v.Err = errors.NewInternalError(err)
+		}
+	}
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -106,11 +130,10 @@ type view struct {
 	ProxyGranting         bool
 	ProxyTicket           *cashew.Ticket
 	Proxies               []*url.URL
-	Err                   error
+	Err                   errors.Wrapper
 }
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
-
 	t := template.New("cas service validate")
 	var f *goblet.File
 	f, err = templates.Assets.File("/validate/servicevalidate.xml")
@@ -125,7 +148,11 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if v.ProxyTicket != nil {
 		iou = v.ProxyTicket.IOU
 	}
-	c, b := handleError(v.Err)
+	var errCode, errBody string
+	if v.Err != nil {
+		errCode = v.Err.Code()
+		errBody = v.Err.Message()
+	}
 	w.WriteHeader(http.StatusOK)
 	return t.Execute(w, map[string]interface{}{
 		"AuthenticationSuccess":  v.AuthenticationSuccess,
@@ -133,13 +160,9 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 		"ProxyGrantingTicketIOU": iou,
 		"HasProxies":             (len(v.Proxies) > 0),
 		"Proxies":                v.Proxies,
-		"ErrorCode":              c,
-		"ErrorBody":              b,
+		"ErrorCode":              errCode,
+		"ErrorBody":              errBody,
 	})
-}
-
-func handleError(err error) (string, string) {
-	return "", ""
 }
 
 // Mount route with handler

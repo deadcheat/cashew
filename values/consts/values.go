@@ -53,20 +53,3 @@ const (
 	// PrefixTicketGrantingCookie prefix string for login-ticket
 	PrefixTicketGrantingCookie = "TGC"
 )
-
-const (
-	// XMLErrorCodeInvalidRequest  not all of the required request parameters were present
-	XMLErrorCodeInvalidRequest = "INVALID_REQUEST"
-	// XMLErrorCodeInvalidTicket the ticket provided was not valid,
-	// or the ticket did not come from an initial login and “renew” was set on validation.
-	// The body of the block of the XML response SHOULD describe the exact details.
-	XMLErrorCodeInvalidTicket = "INVALID_TICKET"
-	// XMLErrorCodeInvalidService the ticket provided was valid,
-	// but the service specified did not match the service associated with the ticket.
-	// CAS MUST invalidate the ticket and disallow future validation of that same ticket.
-	XMLErrorCodeInvalidService = "INVALID_SERVICE"
-	// XMLErrorCodeInternalError an internal error occurred during ticket validation
-	XMLErrorCodeInternalError = "INTERNAL_ERROR"
-	// XMLErrorCodeBadPGT the pgt provided was invalid
-	XMLErrorCodeBadPGT = "BAD_PGT"
-)
