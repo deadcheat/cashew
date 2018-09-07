@@ -43,4 +43,7 @@ var (
 
 	// ErrProxyGrantingURLUnexpectedStatus defined error that pgt request is failed
 	ErrProxyGrantingURLUnexpectedStatus = errors.New("requested to PgtURL but response is unexpected status")
+
+	// ErrProxyCallBackURLMissing defined error that paramter pgtUrl is missing
+	ErrProxyCallBackURLMissing = errors.New("a URL for proxy callback is missing")
 )

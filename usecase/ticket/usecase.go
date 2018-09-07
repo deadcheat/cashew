@@ -45,7 +45,7 @@ func (u *UseCase) LoginTicket(r *http.Request) (t *cashew.Ticket, err error) {
 // ProxyGrantingTicket create new ProxyGrantingTicket
 func (u *UseCase) ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st *cashew.Ticket) (t *cashew.Ticket, err error) {
 	if callbackURL == nil {
-		return nil, errs.ErrNoServiceDetected
+		return nil, errs.ErrProxyCallBackURLMissing
 	}
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeProxyGranting

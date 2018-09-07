@@ -128,7 +128,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		tmp, _ := grantedBy.Value()
 		grantedByID, _ := tmp.(string)
 		ticket.GrantedBy, err = r.Find(grantedByID)
-		if err != nil {
+		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
 	}

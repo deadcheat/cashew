@@ -12,6 +12,7 @@ import (
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/repository/host"
 	"github.com/deadcheat/cashew/repository/id"
+	"github.com/deadcheat/cashew/repository/proxycallback"
 	tr "github.com/deadcheat/cashew/repository/ticket"
 	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
@@ -49,16 +50,22 @@ func main() {
 	r := mux.NewRouter().PathPrefix(foundation.App().URIPath).Subrouter()
 
 	// create usecase, repository, deliver and mount them
-	ticketRepository := tr.New(foundation.DB())
-	idRepository := id.New()
-	hostRepository := host.New()
-	ticketUseCase := tu.New(ticketRepository, idRepository, hostRepository)
-	loginUseCase := login.New(ticketRepository)
-	logoutUseCase := logout.New(ticketRepository)
+	// repositories
+	ticketrep := tr.New(foundation.DB())
+	idrep := id.New()
+	hostrep := host.New()
+	pcrep := proxycallback.New()
+
+	// usecases
+	ticketUseCase := tu.New(ticketrep, idrep, hostrep, pcrep)
+	loginUseCase := login.New(ticketrep)
+	logoutUseCase := logout.New(ticketrep)
 	authUseCase := auth.New()
+	validateUseCase := validate.New(ticketrep)
+
+	// create deliver and mount
 	login := dl.New(r, ticketUseCase, loginUseCase, logoutUseCase, authUseCase)
 	login.Mount()
-	validateUseCase := validate.New(ticketRepository)
 	v := dv.New(r, ticketUseCase, validateUseCase)
 	v.Mount()
 

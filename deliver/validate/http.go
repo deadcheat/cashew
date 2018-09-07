@@ -36,8 +36,8 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 
 	p := r.URL.Query()
 	svc, err := params.ServiceURL(p)
-	if err != nil {
-		log.Println(err)
+	if err != nil || svc == nil {
+		log.Printf("error: [%+v] service: [%+v]", err, svc)
 		http.Error(w, "invalid url for query parameter 'service'", http.StatusBadRequest)
 		return
 	}
@@ -107,15 +107,19 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
-	v.ProxyTicket = pgt
 	if err != nil {
 		switch err {
+		case errs.ErrProxyCallBackURLMissing:
+			// do nothing
 		case errs.ErrProxyGrantingURLUnexpectedStatus:
 			v.Err = errors.NewInvalidProxyCallback(err)
 		default:
 			v.Err = errors.NewInternalError(err)
 		}
 	}
+	v.ProxyTicket = pgt
+	v.AuthenticationSuccess = true
+	v.UserName = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
