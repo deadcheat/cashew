@@ -67,18 +67,18 @@ func (r *Repository) executeTicketAccessors(tx *sql.Tx, accessors []ticketAccess
 
 // Find search for new ticket by ticket id
 func (r *Repository) Find(id string) (t *cashew.Ticket, err error) {
-	var gid string
-	t, gid, err = r.findTicket(id)
+	var parentID string
+	t, parentID, err = r.findTicket(id)
 
-	previous := t
-	var g *cashew.Ticket
-	for gid != "" {
-		g, gid, err = r.findTicket(gid)
+	child := t
+	var parent *cashew.Ticket
+	for parentID != "" {
+		parent, parentID, err = r.findTicket(parentID)
 		if err != nil {
 			break
 		}
-		previous.GrantedBy = g
-		previous = g
+		child.GrantedBy = parent
+		child = parent
 	}
 	return
 }
