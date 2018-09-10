@@ -1,5 +1,11 @@
 package errors
 
+import (
+	"fmt"
+
+	"github.com/deadcheat/cashew/values/errs"
+)
+
 // ErrorCode error code
 type ErrorCode int
 
@@ -46,6 +52,7 @@ type Wrapper interface {
 	Code() string
 	Message() string
 	Is(ErrorCode) bool
+	Err() error
 }
 
 // ErrorWrapper is hold error-code (what will be returned as xml)
@@ -80,6 +87,11 @@ func (w *wrapper) Message() string {
 	return w.err.Error()
 }
 
+// Err return message
+func (w *wrapper) Err() error {
+	return w.err
+}
+
 // Is return whether is errorcode same
 func (w *wrapper) Is(ec ErrorCode) bool {
 	return (w.errorCode == ec)
@@ -104,8 +116,24 @@ func NewInvalidService(err error) Wrapper {
 }
 
 // NewInvalidTicket return invalid ticket wrapper
-func NewInvalidTicket(err error) Wrapper {
-	return New(ErrorCodeInvalidTicket, err)
+func NewInvalidTicket(ticket string, err error) Wrapper {
+	return &invalidTicket{ticket, New(ErrorCodeInvalidTicket, err)}
+}
+
+type invalidTicket struct {
+	ticket string
+	Wrapper
+}
+
+func (i *invalidTicket) Message() string {
+	switch i.Err() {
+	case errs.ErrTicketIsProxyTicket:
+		return fmt.Sprintf("Ticket %s is proxy ticket", i.ticket)
+	case errs.ErrTicketTypeNotMatched:
+		return fmt.Sprintf("Ticket %s is not service ticket", i.ticket)
+	}
+
+	return fmt.Sprintf("Ticket %s not recognized", i.ticket)
 }
 
 // NewInvalidTicketSpec return invalid ticket wrapper

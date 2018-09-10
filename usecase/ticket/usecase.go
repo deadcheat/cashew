@@ -52,6 +52,7 @@ func (u *UseCase) ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st 
 	t.ID = u.idr.Issue(t.Type)
 	t.IOU = u.idr.Issue(cashew.TicketTypeProxyGrantingIOU)
 	t.ClientHostName = u.chr.Ensure(r)
+	t.GrantedBy = st
 
 	if err = u.pcr.Dial(callbackURL, t.ID, t.IOU); err != nil {
 		return nil, err

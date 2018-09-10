@@ -17,8 +17,8 @@ import (
 	"github.com/deadcheat/cashew/usecase/auth"
 	"github.com/deadcheat/cashew/usecase/login"
 	"github.com/deadcheat/cashew/usecase/logout"
+	"github.com/deadcheat/cashew/usecase/servicevalidate"
 	tu "github.com/deadcheat/cashew/usecase/ticket"
-	"github.com/deadcheat/cashew/usecase/validate"
 
 	"github.com/gorilla/mux"
 )
@@ -61,7 +61,7 @@ func main() {
 	loginUseCase := login.New(ticketrep)
 	logoutUseCase := logout.New(ticketrep)
 	authUseCase := auth.New()
-	validateUseCase := validate.New(ticketrep)
+	validateUseCase := servicevalidate.New(ticketrep)
 
 	// create deliver and mount
 	login := dl.New(r, ticketUseCase, loginUseCase, logoutUseCase, authUseCase)

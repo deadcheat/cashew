@@ -67,7 +67,7 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	ticket := strings.FirstString(p["ticket"])
 	svc, err := params.ServiceURL(p)
 	if err != nil || svc == nil || ticket == "" {
-		v.Err = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
+		v.e = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
 		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -89,12 +89,15 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// diplay failed xml and finish process
 		switch err {
-		case errs.ErrServiceTicketIsNoPrimary, errs.ErrTicketTypeNotMatched:
-			v.Err = errors.NewInvalidTicket(err)
+		case errs.ErrTicketNotFound,
+			errs.ErrTicketIsProxyTicket,
+			errs.ErrServiceTicketIsNoPrimary,
+			errs.ErrTicketTypeNotMatched:
+			v.e = errors.NewInvalidTicket(ticket, err)
 		case errs.ErrServiceURLNotMatched:
-			v.Err = errors.NewInvalidService(err)
+			v.e = errors.NewInvalidService(err)
 		default:
-			v.Err = errors.NewInternalError(err)
+			v.e = errors.NewInternalError(err)
 		}
 		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
@@ -112,15 +115,15 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 		case errs.ErrProxyCallBackURLMissing:
 			// do nothing
 		case errs.ErrProxyGrantingURLUnexpectedStatus:
-			v.Err = errors.NewInvalidProxyCallback(err)
+			v.e = errors.NewInvalidProxyCallback(err)
 		default:
-			v.Err = errors.NewInternalError(err)
+			v.e = errors.NewInternalError(err)
 		}
 	}
-	v.ProxyTicket = pgt
-	v.ProxyGranting = true
-	v.AuthenticationSuccess = true
-	v.UserName = st.UserName
+	v.pgtiou = pgt.IOU
+	v.proxied = true
+	v.success = true
+	v.username = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -130,12 +133,13 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 }
 
 type view struct {
-	AuthenticationSuccess bool
-	UserName              string
-	ProxyGranting         bool
-	ProxyTicket           *cashew.Ticket
-	Proxies               []*url.URL
-	Err                   errors.Wrapper
+	success  bool
+	username string
+	proxied  bool
+	pgt      string
+	pgtiou   string
+	proxies  []*url.URL
+	e        errors.Wrapper
 }
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
@@ -149,15 +153,11 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
-	iou := ""
-	if v.ProxyTicket != nil {
-		iou = v.ProxyTicket.IOU
-	}
 	var errCode, errBody string
-	if v.Err != nil {
-		errCode = v.Err.Code()
-		errBody = v.Err.Message()
-		if v.Err.Is(errors.ErrorCodeInternalError) {
+	if v.e != nil {
+		errCode = v.e.Code()
+		errBody = v.e.Message()
+		if v.e.Is(errors.ErrorCodeInternalError) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -166,12 +166,12 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 		w.WriteHeader(http.StatusOK)
 	}
 	return t.Execute(w, map[string]interface{}{
-		"AuthenticationSuccess":  v.AuthenticationSuccess,
-		"UserName":               v.UserName,
-		"ProxyGrantingTicketIOU": iou,
-		"ProxyGranting":          v.ProxyGranting,
-		"HasProxies":             (len(v.Proxies) > 0),
-		"Proxies":                v.Proxies,
+		"AuthenticationSuccess":  v.success,
+		"UserName":               v.username,
+		"ProxyGrantingTicketIOU": v.pgtiou,
+		"ProxyGranting":          v.proxied,
+		"HasProxies":             (len(v.proxies) > 0),
+		"Proxies":                v.proxies,
 		"ErrorCode":              errCode,
 		"ErrorBody":              errBody,
 	})

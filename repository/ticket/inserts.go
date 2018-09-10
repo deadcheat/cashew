@@ -150,7 +150,7 @@ var (
 
 	// inserter for ticket_granting_ticket
 	insertTicketGrant ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService {
+		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeProxy && t.Type != cashew.TicketTypeProxyGranting {
 			return nil
 		}
 		if t.GrantedBy == nil {

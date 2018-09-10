@@ -1,6 +1,7 @@
-package validate
+package servicevalidate
 
 import (
+	"database/sql"
 	"net/url"
 
 	"github.com/deadcheat/cashew/values/errs"
@@ -21,11 +22,17 @@ func New(r cashew.TicketRepository) cashew.ValidateUseCase {
 // Validate execute validation service and ticket
 func (u *UseCase) Validate(ticket string, service *url.URL, renew bool) (t *cashew.Ticket, err error) {
 	t, err = u.r.Find(ticket)
+	if err == sql.ErrNoRows {
+		return nil, errs.ErrTicketNotFound
+	}
 	if err != nil {
 		return
 	}
 	if renew && !t.Primary {
 		return nil, errs.ErrServiceTicketIsNoPrimary
+	}
+	if t.Type == cashew.TicketTypeProxy {
+		return nil, errs.ErrTicketIsProxyTicket
 	}
 	if t.Type != cashew.TicketTypeService {
 		return nil, errs.ErrTicketTypeNotMatched
