@@ -45,7 +45,7 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 
 	renews := p[consts.ParamKeyRenew]
 
-	t, err := d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
+	t, err := d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), false)
 	if err == nil {
 		isValidated = "yes"
 		foundUser = t.UserName
@@ -85,7 +85,7 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	renews := p[consts.ParamKeyRenew]
 	var st *cashew.Ticket
-	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews))
+	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), false)
 	if err != nil {
 		// diplay failed xml and finish process
 		switch err {
