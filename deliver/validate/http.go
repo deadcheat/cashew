@@ -57,6 +57,14 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
+	d.fragmentValidate(w, r, false)
+}
+
+func (d *Deliver) proxyValidate(w http.ResponseWriter, r *http.Request) {
+	d.fragmentValidate(w, r, true)
+}
+
+func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxyValidate bool) {
 
 	// serviceValidate will be rendered as utf-8 xml
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
@@ -85,7 +93,7 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 	}
 	renews := p[consts.ParamKeyRenew]
 	var st *cashew.Ticket
-	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), false)
+	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), proxyValidate)
 	if err != nil {
 		// diplay failed xml and finish process
 		switch err {
@@ -181,4 +189,5 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 func (d *Deliver) Mount() {
 	d.r.HandleFunc("/validate", d.validate).Methods(http.MethodGet)
 	d.r.HandleFunc("/serviceValidate", d.serviceValidate).Methods(http.MethodGet)
+	d.r.HandleFunc("/proxyValidate", d.proxyValidate).Methods(http.MethodGet)
 }
