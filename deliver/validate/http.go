@@ -118,6 +118,7 @@ func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	v.ProxyTicket = pgt
+	v.ProxyGranting = true
 	v.AuthenticationSuccess = true
 	v.UserName = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
@@ -168,6 +169,7 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 		"AuthenticationSuccess":  v.AuthenticationSuccess,
 		"UserName":               v.UserName,
 		"ProxyGrantingTicketIOU": iou,
+		"ProxyGranting":          v.ProxyGranting,
 		"HasProxies":             (len(v.Proxies) > 0),
 		"Proxies":                v.Proxies,
 		"ErrorCode":              errCode,

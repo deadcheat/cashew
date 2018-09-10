@@ -48,6 +48,8 @@ func (r *Repository) Dial(u *url.URL, pgt, iou string) (err error) {
 	if req, err = http.NewRequest(http.MethodGet, u.String(), nil); err != nil {
 		return
 	}
+	// overwrite user agent
+	req.Header.Add("User-Agent", "Cashew/CasProxyCallbackAgent/1.0.0")
 
 	var resp *http.Response
 	if resp, err = c.Do(req); err != nil {
