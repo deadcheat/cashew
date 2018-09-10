@@ -16,6 +16,10 @@ const (
 	ParamKeyRenew = "renew"
 	// ParamKeyGateway key string for param
 	ParamKeyGateway = "gateway"
+	// ParamKeyPgt key string for param
+	ParamKeyPgt = "pgt"
+	// ParamKeyTargetService key string for param
+	ParamKeyTargetService = "targetService"
 )
 
 const (
