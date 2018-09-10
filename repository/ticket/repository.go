@@ -2,6 +2,7 @@ package ticket
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/deadcheat/cashew/values/errs"
 
@@ -27,6 +28,7 @@ func (r *Repository) Create(t *cashew.Ticket) error {
 
 // Delete from all ticket-related table and ticket table
 func (r *Repository) Delete(t *cashew.Ticket) error {
+	fmt.Println(t.ID, t.Type)
 	switch t.Type {
 	case cashew.TicketTypeTicketGranting, cashew.TicketTypeProxyGranting:
 		return r.executeOnNewTx(deleteGrantingTicketAccessors, t)
@@ -64,16 +66,34 @@ func (r *Repository) executeTicketAccessors(tx *sql.Tx, accessors []ticketAccess
 }
 
 // Find search for new ticket by ticket id
-func (r *Repository) Find(id string) (*cashew.Ticket, error) {
-	stmt, err := r.db.Prepare(selectByTicketIDQuery)
+func (r *Repository) Find(id string) (t *cashew.Ticket, err error) {
+	var gid string
+	t, gid, err = r.findTicket(id)
+
+	previous := t
+	var g *cashew.Ticket
+	for gid != "" {
+		g, gid, err = r.findTicket(gid)
+		if err != nil {
+			break
+		}
+		previous.GrantedBy = g
+		previous = g
+	}
+	return
+}
+
+func (r *Repository) findTicket(id string) (ticket *cashew.Ticket, granterTicketID string, err error) {
+	var stmt *sql.Stmt
+	stmt, err = r.db.Prepare(selectByTicketIDQuery)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	defer stmt.Close()
 
 	row := stmt.QueryRow(id)
+	ticket = new(cashew.Ticket)
 	var (
-		ticket          cashew.Ticket
 		typeStr         sql.NullString
 		service         sql.NullString
 		grantedBy       sql.NullString
@@ -96,7 +116,7 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		&primaryTicket,
 	)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	if typeStr.Valid {
@@ -123,18 +143,13 @@ func (r *Repository) Find(id string) (*cashew.Ticket, error) {
 		ticket.UserName = tmp.(string)
 	}
 
-	// TODO confirm this recursive call will not cause any problems
 	if grantedBy.Valid {
 		tmp, _ := grantedBy.Value()
-		grantedByID, _ := tmp.(string)
-		ticket.GrantedBy, err = r.Find(grantedByID)
-		if err != nil && err != sql.ErrNoRows {
-			return nil, err
-		}
+		granterTicketID, _ = tmp.(string)
 	}
 
 	ticket.Primary = primaryTicket.Valid
-	return &ticket, nil
+	return
 }
 
 // findAllRelatedTicket search for new ticket by ticket id
@@ -218,9 +233,22 @@ func (r *Repository) deleteGrantingTicket(tx *sql.Tx, t *cashew.Ticket) error {
 
 // DeleteRelatedTicket search for new ticket by ticket id
 func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
-	var ts []*cashew.Ticket
-	// find all tickets granting this ticket
-	ts, err = r.findAllRelatedTicket(t.ID)
+	ts := []*cashew.Ticket{t}
+	index := 0
+	sentinel := ts[index]
+	for sentinel != nil {
+		var children []*cashew.Ticket
+		// find all tickets granting this ticket
+		children, _ = r.findAllRelatedTicket(sentinel.ID)
+		if len(children) > 0 {
+			ts = append(ts, children...)
+		}
+		if len(ts) <= index {
+			break
+		}
+		sentinel = ts[index]
+		index++
+	}
 	// start tran
 	var tx *sql.Tx
 	tx, err = r.db.Begin()
@@ -229,7 +257,7 @@ func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
 	}
 	defer tx.Rollback()
 	// delete all tickets
-	for i := range ts {
+	for i := len(ts) - 1; i >= 0; i-- {
 		ti := ts[i]
 		err = r.deleteServiceTicket(tx, ti)
 		if err != nil {

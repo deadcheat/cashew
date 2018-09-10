@@ -38,7 +38,7 @@ func (u *UseCase) Validate(ticket string, service *url.URL, renew, allowProxy bo
 }
 
 func validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) error {
-	if renew && !t.Primary {
+	if renew && !primary(t) {
 		return errs.ErrServiceTicketIsNoPrimary
 	}
 	if !allowProxy && t.Type == cashew.TicketTypeProxy {
@@ -51,4 +51,25 @@ func validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) 
 		return errs.ErrServiceURLNotMatched
 	}
 	return nil
+}
+
+func primary(t *cashew.Ticket) bool {
+	if t == nil {
+		return false
+	}
+	switch t.Type {
+	case cashew.TicketTypeService:
+		return t.Primary
+	case cashew.TicketTypeProxy:
+		g := t.GrantedBy
+		for g != nil {
+			if t.Type == cashew.TicketTypeService {
+				return t.Primary
+			}
+			g = t.GrantedBy
+		}
+		return false
+	default:
+		return false
+	}
 }
