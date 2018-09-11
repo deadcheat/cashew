@@ -128,10 +128,10 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 			v.e = errors.NewInternalError(err)
 		}
 	}
-	v.pgtiou = pgt.IOU
-	v.proxied = true
-	v.success = true
-	v.username = st.UserName
+	v.ProxyGrantingTicketIOU = pgt.IOU
+	v.ProxyGranting = true
+	v.AuthenticationSuccess = true
+	v.UserName = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
