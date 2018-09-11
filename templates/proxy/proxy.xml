@@ -1,6 +1,6 @@
-<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .ProxySuccess }}
+<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .Success }}
     <cas:proxySuccess>
-        <cas:proxyTicket>{{ .ProxyTicket }}</cas:proxyTicket>
+        <cas:proxyTicket>{{ .Ticket }}</cas:proxyTicket>
     </cas:proxySuccess>{{ else }}
     <cas:proxyFailure code="{{ .ErrorCode }}">
         {{ .ErrorBody }}

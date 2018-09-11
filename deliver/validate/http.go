@@ -141,13 +141,16 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 }
 
 type view struct {
-	success  bool
-	username string
-	proxied  bool
-	pgt      string
-	pgtiou   string
-	proxies  []*url.URL
-	e        errors.Wrapper
+	AuthenticationSuccess  bool
+	UserName               string
+	ProxyGranting          bool
+	ProxyGrantingTicket    string
+	ProxyGrantingTicketIOU string
+	HasProxies             bool
+	Proxies                []*url.URL
+	e                      errors.Wrapper
+	ErrorCode              string
+	ErrorBody              string
 }
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
@@ -161,10 +164,10 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
-	var errCode, errBody string
+	v.HasProxies = (len(v.Proxies) > 0)
 	if v.e != nil {
-		errCode = v.e.Code()
-		errBody = v.e.Message()
+		v.ErrorCode = v.e.Code()
+		v.ErrorBody = v.e.Message()
 		if v.e.Is(errors.ErrorCodeInternalError) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 		} else {
@@ -173,16 +176,7 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
-	return t.Execute(w, map[string]interface{}{
-		"AuthenticationSuccess":  v.success,
-		"UserName":               v.username,
-		"ProxyGrantingTicketIOU": v.pgtiou,
-		"ProxyGranting":          v.proxied,
-		"HasProxies":             (len(v.proxies) > 0),
-		"Proxies":                v.proxies,
-		"ErrorCode":              errCode,
-		"ErrorBody":              errBody,
-	})
+	return t.Execute(w, v)
 }
 
 // Mount route with handler
