@@ -57,14 +57,13 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
-	var errCode, errBody string
 	if v.e != nil {
-		errCode = v.e.Code()
-		errBody = v.e.Message()
+		v.ErrorCode = v.e.Code()
+		v.ErrorBody = v.e.Message()
 		if v.e.Is(errors.ErrorCodeInternalError) {
-			w.WriteHeader(http.StatusUnprocessableEntity)
-		} else {
 			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusUnprocessableEntity)
 		}
 	} else {
 		w.WriteHeader(http.StatusOK)
