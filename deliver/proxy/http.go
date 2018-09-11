@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"html/template"
-	"log"
 	"net/http"
 
 	"github.com/deadcheat/cashew/templates"
@@ -31,11 +30,10 @@ func (d *Deliver) proxy(w http.ResponseWriter, r *http.Request) {
 	p := r.URL.Query()
 	pgt := params.Pgt(p)
 	targetService := params.TargetService(p)
-
+	v := new(view)
 	if pgt == "" || targetService == "" {
-		log.Println(errs.ErrRequiredParameterMissed)
+		v.e = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
 	}
-
 }
 
 type view struct {
