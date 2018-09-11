@@ -128,10 +128,9 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 			v.e = errors.NewInternalError(err)
 		}
 	}
-	v.ProxyGrantingTicketIOU = pgt.IOU
-	v.ProxyGranting = true
-	v.AuthenticationSuccess = true
-	v.UserName = st.UserName
+	v.IOU = pgt.IOU
+	v.Success = true
+	v.Name = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -141,16 +140,13 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 }
 
 type view struct {
-	AuthenticationSuccess  bool
-	UserName               string
-	ProxyGranting          bool
-	ProxyGrantingTicket    string
-	ProxyGrantingTicketIOU string
-	HasProxies             bool
-	Proxies                []*url.URL
-	e                      errors.Wrapper
-	ErrorCode              string
-	ErrorBody              string
+	Success   bool
+	Name      string
+	IOU       string
+	Proxies   []*url.URL
+	e         errors.Wrapper
+	ErrorCode string
+	ErrorBody string
 }
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
@@ -164,7 +160,6 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
-	v.HasProxies = (len(v.Proxies) > 0)
 	if v.e != nil {
 		v.ErrorCode = v.e.Code()
 		v.ErrorBody = v.e.Message()

@@ -1,8 +1,8 @@
-<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .AuthenticationSuccess }}
+<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .Success }}
     <cas:authenticationSuccess>
-        <cas:user>{{ .UserName }}</cas:user>{{ if .ProxyGranting }}
-        <cas:proxyGrantingTicket>{{ .ProxyGrantingTicketIOU }}</cas:proxyGrantingTicket>{{ end }}
-        {{ if .HasProxies }}
+        <cas:user>{{ .Name }}</cas:user>{{ if ne .IOU "" }}
+        <cas:proxyGrantingTicket>{{ .IOU }}</cas:proxyGrantingTicket>{{ end }}
+        {{ if gt (len .Proxies) 0 }}
         <cas:proxies>
         {{ range $p := .Proxies }}
         <cas:proxy>{{ $p }}</cas:proxy>
