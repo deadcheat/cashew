@@ -21,16 +21,16 @@ func New(r cashew.TicketRepository, idr cashew.IDRepository, chr cashew.ClientHo
 	return &UseCase{r, idr, chr, pcr}
 }
 
-// FindTicket find ticket by id
-func (u *UseCase) FindTicket(id string) (*cashew.Ticket, error) {
+// Find find ticket by id
+func (u *UseCase) Find(id string) (*cashew.Ticket, error) {
 	if id == "" {
 		return nil, errs.ErrNoTicketID
 	}
 	return u.r.Find(id)
 }
 
-// LoginTicket create new LoginTicket
-func (u *UseCase) LoginTicket(r *http.Request) (t *cashew.Ticket, err error) {
+// NewLogin create new LoginTicket
+func (u *UseCase) NewLogin(r *http.Request) (t *cashew.Ticket, err error) {
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeLogin
 	t.ID = u.idr.Issue(t.Type)
@@ -42,8 +42,8 @@ func (u *UseCase) LoginTicket(r *http.Request) (t *cashew.Ticket, err error) {
 	return
 }
 
-// ProxyGrantingTicket create new ProxyGrantingTicket
-func (u *UseCase) ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st *cashew.Ticket) (t *cashew.Ticket, err error) {
+// NewProxyGranting create new proxy-granting-ticket
+func (u *UseCase) NewProxyGranting(r *http.Request, callbackURL *url.URL, st *cashew.Ticket) (t *cashew.Ticket, err error) {
 	if callbackURL == nil {
 		return nil, errs.ErrProxyCallBackURLMissing
 	}
@@ -64,8 +64,8 @@ func (u *UseCase) ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st 
 	return
 }
 
-// ServiceTicket create new ServiceTicket
-func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.Ticket, primary bool) (t *cashew.Ticket, err error) {
+// NewService create new Service-Ticket
+func (u *UseCase) NewService(r *http.Request, service *url.URL, tgt *cashew.Ticket, primary bool) (t *cashew.Ticket, err error) {
 	if service == nil {
 		return nil, errs.ErrNoServiceDetected
 	}
@@ -84,13 +84,13 @@ func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.T
 	return
 }
 
-// ProxyTicket create new ProxyTicket
-func (u *UseCase) ProxyTicket(r *http.Request, service *url.URL, grantedBy *cashew.Ticket) (*cashew.Ticket, error) {
+// NewProxy create new ProxyTicket
+func (u *UseCase) NewProxy(r *http.Request, service string, grantedBy *cashew.Ticket) (*cashew.Ticket, error) {
 	return nil, nil
 }
 
-// TicketGrantingTicket create new ServiceTicket
-func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
+// NewTicketGranting create new ServiceTicket
+func (u *UseCase) NewGranting(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeTicketGranting
 	t.ID = u.idr.Issue(t.Type)
@@ -102,4 +102,9 @@ func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAt
 	}
 
 	return
+}
+
+// Consume will consume and update 'last-referenced-at'
+func (u *UseCase) Consume(t *cashew.Ticket) error {
+	return u.r.Consume(t)
 }

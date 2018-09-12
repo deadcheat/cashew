@@ -1,6 +1,7 @@
 package validate
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -33,6 +34,7 @@ func New(r *mux.Router, tuc cashew.TicketUseCase, vuc cashew.ValidateUseCase) ca
 func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 	isValidated := "no"
 	foundUser := ""
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 
 	p := r.URL.Query()
 	svc, err := params.ServiceURL(p)
@@ -44,13 +46,18 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 	ticket := strings.FirstString(p["ticket"])
 
 	renews := p[consts.ParamKeyRenew]
-
-	t, err := d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), false)
+	t, err := d.tuc.Find(ticket)
+	if err != nil {
+		if _, err = fmt.Fprintf(w, "%s\n%s\n", isValidated, foundUser); err != nil {
+			http.Error(w, "failed to show response", http.StatusInternalServerError)
+		}
+		return
+	}
+	err = d.vuc.ValidateService(t, svc, strings.StringSliceContainsTrue(renews))
 	if err == nil {
 		isValidated = "yes"
 		foundUser = t.UserName
 	}
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	if _, err = fmt.Fprintf(w, "%s\n%s\n", isValidated, foundUser); err != nil {
 		http.Error(w, "failed to show response", http.StatusInternalServerError)
 	}
@@ -64,12 +71,13 @@ func (d *Deliver) proxyValidate(w http.ResponseWriter, r *http.Request) {
 	d.fragmentValidate(w, r, true)
 }
 
-func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxyValidate bool) {
+func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, checkAsProxyValidation bool) {
 
 	// serviceValidate will be rendered as utf-8 xml
 	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
 
 	var v view
+	v.Success = true
 	p := r.URL.Query()
 	// service and ticket are required parameter
 	ticket := strings.FirstString(p["ticket"])
@@ -93,7 +101,33 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 	}
 	renews := p[consts.ParamKeyRenew]
 	var st *cashew.Ticket
-	st, err = d.vuc.Validate(ticket, svc, strings.StringSliceContainsTrue(renews), proxyValidate)
+	st, err = d.tuc.Find(ticket)
+	if err != nil {
+		// diplay failed xml and finish process
+		switch err {
+		case sql.ErrNoRows,
+			errs.ErrTicketNotFound:
+			v.e = errors.NewInvalidTicket(ticket, err)
+		case errs.ErrServiceURLNotMatched:
+			v.e = errors.NewInvalidService(err)
+		default:
+			v.e = errors.NewInternalError(err)
+		}
+		v.Success = false
+		err = d.showServiceValidateXML(w, r, v)
+		if err != nil {
+			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+			log.Println(err)
+			http.Error(w, "failed to show xml", http.StatusInternalServerError)
+			return
+		}
+		return
+	}
+	if checkAsProxyValidation {
+		err = d.vuc.ValidateProxy(st, svc)
+	} else {
+		err = d.vuc.ValidateService(st, svc, strings.StringSliceContainsTrue(renews))
+	}
 	if err != nil {
 		// diplay failed xml and finish process
 		switch err {
@@ -107,6 +141,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 		default:
 			v.e = errors.NewInternalError(err)
 		}
+		v.Success = false
 		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -117,7 +152,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 		return
 	}
 	var pgt *cashew.Ticket
-	pgt, err = d.tuc.ProxyGrantingTicket(r, pgtURL, st)
+	pgt, err = d.tuc.NewProxyGranting(r, pgtURL, st)
 	if err != nil {
 		switch err {
 		case errs.ErrProxyCallBackURLMissing:
@@ -127,9 +162,9 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxy
 		default:
 			v.e = errors.NewInternalError(err)
 		}
+		v.Success = false
 	}
 	v.IOU = pgt.IOU
-	v.Success = true
 	v.Name = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {

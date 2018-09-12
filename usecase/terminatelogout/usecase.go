@@ -1,4 +1,4 @@
-package logout
+package terminatelogout
 
 import "github.com/deadcheat/cashew"
 
@@ -8,7 +8,7 @@ type UseCase struct {
 }
 
 // New return new logout usecase
-func New(r cashew.TicketRepository) cashew.LogoutUseCase {
+func New(r cashew.TicketRepository) cashew.TerminateUseCase {
 	return &UseCase{r}
 }
 

@@ -1,43 +1,44 @@
 package validate
 
 import (
-	"database/sql"
 	"net/url"
 
-	"github.com/deadcheat/cashew/values/errs"
-
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/validator/ticket"
+	"github.com/deadcheat/cashew/values/errs"
 )
 
 // UseCase implemented cashew.LoginUseCase
 type UseCase struct {
-	r cashew.TicketRepository
+	tr cashew.TicketRepository
+	tv ticket.Validator
 }
 
 // New return new logout usecase
 func New(r cashew.TicketRepository) cashew.ValidateUseCase {
-	return &UseCase{r}
+	tv := ticket.New()
+	return &UseCase{r, tv}
 }
 
-// Validate execute validation service and ticket
-func (u *UseCase) Validate(ticket string, service *url.URL, renew, allowProxy bool) (t *cashew.Ticket, err error) {
-	t, err = u.r.Find(ticket)
-	if err == sql.ErrNoRows {
-		return nil, errs.ErrTicketNotFound
+// ValidateLogin execute validation for login
+func (u *UseCase) ValidateLogin(ticket *cashew.Ticket) (err error) {
+	if ticket.Type != cashew.TicketTypeLogin {
+		return errs.ErrTicketTypeNotMatched
 	}
-	if err != nil {
-		return
-	}
-	if err = validateTicket(t, service, renew, allowProxy); err != nil {
-		return
-	}
-	if err = u.r.Consume(t); err != nil {
-		return
-	}
-	return
+	return u.tv.Validate(ticket)
 }
 
-func validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) error {
+// ValidateService execute validation service and ticket
+func (u *UseCase) ValidateService(ticket *cashew.Ticket, service *url.URL, renew bool) (err error) {
+	return u.validateTicket(ticket, service, renew, false)
+}
+
+// ValidateProxy execute validation service and ticket
+func (u *UseCase) ValidateProxy(ticket *cashew.Ticket, service *url.URL) (err error) {
+	return u.validateTicket(ticket, service, false, true)
+}
+
+func (u *UseCase) validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) error {
 	if renew && !primary(t) {
 		return errs.ErrServiceTicketIsNoPrimary
 	}
@@ -50,7 +51,16 @@ func validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) 
 	if t.Service != service.String() {
 		return errs.ErrServiceURLNotMatched
 	}
-	return nil
+	return u.tv.Validate(t)
+}
+
+// ValidateProxyGranting execute validation service and ticket
+func (u *UseCase) ValidateProxyGranting(ticket *cashew.Ticket) (err error) {
+	if ticket.Type != cashew.TicketTypeProxyGranting {
+		return errs.ErrTicketTypeNotMatched
+	}
+
+	return u.tv.Validate(ticket)
 }
 
 func primary(t *cashew.Ticket) bool {
