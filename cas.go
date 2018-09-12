@@ -17,6 +17,7 @@ type TicketUseCase interface {
 	ProxyGrantingTicket(r *http.Request, callbackURL *url.URL, st *Ticket) (*Ticket, error)
 	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket, primary bool) (*Ticket, error)
 	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
+	ProxyTicket(r *http.Request, service *url.URL, grantedBy *Ticket) (*Ticket, error)
 }
 
 // LoginUseCase define behaviors for Cas Server

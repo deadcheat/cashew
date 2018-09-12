@@ -84,6 +84,11 @@ func (u *UseCase) ServiceTicket(r *http.Request, service *url.URL, tgt *cashew.T
 	return
 }
 
+// ProxyTicket create new ProxyTicket
+func (u *UseCase) ProxyTicket(r *http.Request, service *url.URL, grantedBy *cashew.Ticket) (*cashew.Ticket, error) {
+	return nil, nil
+}
+
 // TicketGrantingTicket create new ServiceTicket
 func (u *UseCase) TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
 	t = new(cashew.Ticket)
