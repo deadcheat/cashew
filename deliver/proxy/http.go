@@ -6,11 +6,10 @@ import (
 	"net/http"
 
 	"github.com/deadcheat/cashew/templates"
-	"github.com/deadcheat/cashew/values/errs"
 	"github.com/deadcheat/goblet"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/helpers/errors"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/gorilla/mux"
 )
@@ -34,14 +33,14 @@ func (d *Deliver) proxy(w http.ResponseWriter, r *http.Request) {
 
 	v := new(view)
 	if pgt == "" || targetService == "" {
-		v.e = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
+		v.e = errors.NewInvalidRequest(errors.ErrRequiredParameterMissed)
 	}
 	t, err := d.vuc.Validate(pgt, nil, false, true)
 	if err != nil {
 		// diplay failed xml and finish process
 		switch err {
-		case errs.ErrTicketNotFound,
-			errs.ErrTicketTypeNotMatched:
+		case errors.ErrTicketNotFound,
+			errors.ErrTicketTypeNotMatched:
 			v.e = errors.NewInvalidTicket(pgt, err)
 		default:
 			v.e = errors.NewInternalError(err)
@@ -75,7 +74,7 @@ func (d *Deliver) proxy(w http.ResponseWriter, r *http.Request) {
 type view struct {
 	Success   bool
 	Ticket    string
-	e         errors.Wrapper
+	e         errors.AppError
 	ErrorCode string
 	ErrorBody string
 }

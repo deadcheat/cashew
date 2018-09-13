@@ -2,8 +2,8 @@ package terminatelogin
 
 import (
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/validator/ticket"
-	"github.com/deadcheat/cashew/values/errs"
 )
 
 // UseCase implemented cashew.TerminateUseCase
@@ -21,7 +21,7 @@ func New(r cashew.TicketRepository) cashew.TerminateUseCase {
 // Terminate delete login ticket
 func (u *UseCase) Terminate(t *cashew.Ticket) error {
 	if t.Type != cashew.TicketTypeLogin {
-		return errs.ErrInvalidTicketType
+		return errors.NewTicketTypeError(t.ID, t.Type)
 	}
 	return u.r.Delete(t)
 }

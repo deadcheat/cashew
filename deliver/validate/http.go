@@ -1,7 +1,6 @@
 package validate
 
 import (
-	"database/sql"
 	"fmt"
 	"html/template"
 	"log"
@@ -9,12 +8,11 @@ import (
 	"net/url"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/helpers/errors"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
-	"github.com/deadcheat/cashew/values/errs"
 	"github.com/deadcheat/goblet"
 	"github.com/gorilla/mux"
 )
@@ -83,7 +81,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 	ticket := strings.FirstString(p["ticket"])
 	svc, err := params.ServiceURL(p)
 	if err != nil || svc == nil || ticket == "" {
-		v.e = errors.NewInvalidRequest(errs.ErrRequiredParameterMissed)
+		v.e = errors.ErrRequiredParameterMissed
 		err = d.showServiceValidateXML(w, r, v)
 		if err != nil {
 			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
@@ -104,13 +102,9 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 	st, err = d.tuc.Find(ticket)
 	if err != nil {
 		// diplay failed xml and finish process
-		switch err {
-		case sql.ErrNoRows,
-			errs.ErrTicketNotFound:
-			v.e = errors.NewInvalidTicket(ticket, err)
-		case errs.ErrServiceURLNotMatched:
-			v.e = errors.NewInvalidService(err)
-		default:
+		var ok bool
+		v.e, ok = errors.AsErrorView(err)
+		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
 		v.Success = false
@@ -130,15 +124,9 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 	}
 	if err != nil {
 		// diplay failed xml and finish process
-		switch err {
-		case errs.ErrTicketNotFound,
-			errs.ErrTicketIsProxyTicket,
-			errs.ErrServiceTicketIsNoPrimary,
-			errs.ErrTicketTypeNotMatched:
-			v.e = errors.NewInvalidTicket(ticket, err)
-		case errs.ErrServiceURLNotMatched:
-			v.e = errors.NewInvalidService(err)
-		default:
+		var ok bool
+		v.e, ok = errors.AsErrorView(err)
+		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
 		v.Success = false
@@ -154,17 +142,15 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 	var pgt *cashew.Ticket
 	pgt, err = d.tuc.NewProxyGranting(r, pgtURL, st)
 	if err != nil {
-		switch err {
-		case errs.ErrProxyCallBackURLMissing:
-			// do nothing
-		case errs.ErrProxyGrantingURLUnexpectedStatus:
-			v.e = errors.NewInvalidProxyCallback(err)
-		default:
+		var ok bool
+		v.e, ok = errors.AsErrorView(err)
+		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
 		v.Success = false
+	} else {
+		v.IOU = pgt.IOU
 	}
-	v.IOU = pgt.IOU
 	v.Name = st.UserName
 	err = d.showServiceValidateXML(w, r, v)
 	if err != nil {
@@ -179,7 +165,7 @@ type view struct {
 	Name      string
 	IOU       string
 	Proxies   []*url.URL
-	e         errors.Wrapper
+	e         errors.ErrorView
 	ErrorCode string
 	ErrorBody string
 }

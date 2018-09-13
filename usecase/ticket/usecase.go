@@ -1,11 +1,12 @@
 package ticket
 
 import (
+	"database/sql"
 	"net/http"
 	"net/url"
 
 	"github.com/deadcheat/cashew"
-	"github.com/deadcheat/cashew/values/errs"
+	"github.com/deadcheat/cashew/errors"
 )
 
 // UseCase implemented cashew.LoginUseCase
@@ -22,11 +23,15 @@ func New(r cashew.TicketRepository, idr cashew.IDRepository, chr cashew.ClientHo
 }
 
 // Find find ticket by id
-func (u *UseCase) Find(id string) (*cashew.Ticket, error) {
+func (u *UseCase) Find(id string) (t *cashew.Ticket, err error) {
 	if id == "" {
-		return nil, errs.ErrNoTicketID
+		return nil, errors.ErrNoTicketID
 	}
-	return u.r.Find(id)
+	t, err = u.r.Find(id)
+	if err == sql.ErrNoRows {
+		err = errors.ErrTicketNotFound
+	}
+	return
 }
 
 // NewLogin create new LoginTicket
@@ -44,8 +49,9 @@ func (u *UseCase) NewLogin(r *http.Request) (t *cashew.Ticket, err error) {
 
 // NewProxyGranting create new proxy-granting-ticket
 func (u *UseCase) NewProxyGranting(r *http.Request, callbackURL *url.URL, st *cashew.Ticket) (t *cashew.Ticket, err error) {
+	// if callback-url is not set, skip this method
 	if callbackURL == nil {
-		return nil, errs.ErrProxyCallBackURLMissing
+		return nil, nil
 	}
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeProxyGranting
@@ -67,7 +73,7 @@ func (u *UseCase) NewProxyGranting(r *http.Request, callbackURL *url.URL, st *ca
 // NewService create new Service-Ticket
 func (u *UseCase) NewService(r *http.Request, service *url.URL, tgt *cashew.Ticket, primary bool) (t *cashew.Ticket, err error) {
 	if service == nil {
-		return nil, errs.ErrNoServiceDetected
+		return nil, errors.ErrNoServiceDetected
 	}
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeService

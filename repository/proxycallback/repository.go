@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/foundation"
-	"github.com/deadcheat/cashew/values/errs"
 )
 
 // Repository implements cashew.ProxyCallBackRepository
@@ -66,6 +66,6 @@ func (r *Repository) Dial(u *url.URL, pgt, iou string) (err error) {
 		http.StatusNotModified:
 		return
 	default:
-		return errs.ErrProxyGrantingURLUnexpectedStatus
+		return errors.ErrProxyGrantingURLUnexpectedStatus
 	}
 }

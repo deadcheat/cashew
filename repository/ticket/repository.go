@@ -4,9 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/deadcheat/cashew/values/errs"
-
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 )
 
 // Repository hold db connection and statements
@@ -32,10 +31,10 @@ func (r *Repository) Delete(t *cashew.Ticket) error {
 	switch t.Type {
 	case cashew.TicketTypeTicketGranting, cashew.TicketTypeProxyGranting:
 		return r.executeOnNewTx(deleteGrantingTicketAccessors, t)
-	case cashew.TicketTypeLogin, cashew.TicketTypeService:
+	case cashew.TicketTypeLogin, cashew.TicketTypeService, cashew.TicketTypeProxy:
 		return r.executeOnNewTx(deleteServiceAccessors, t)
 	}
-	return errs.ErrInvalidTicketType
+	return errors.NewTicketTypeError(t.ID, t.Type)
 }
 
 func (r *Repository) executeOnNewTx(accessors []ticketAccessor, t *cashew.Ticket) (err error) {
@@ -272,7 +271,7 @@ func (r *Repository) DeleteRelatedTicket(t *cashew.Ticket) (err error) {
 // Consume update last_referenced_time for ticket
 func (r *Repository) Consume(t *cashew.Ticket) (err error) {
 	if t == nil {
-		return errs.ErrInvalidMethodCall
+		return errors.ErrTicketNotFound
 	}
 	// start tran
 	var tx *sql.Tx

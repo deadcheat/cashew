@@ -1,11 +1,12 @@
 package validate
 
 import (
+	"fmt"
 	"net/url"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/validator/ticket"
-	"github.com/deadcheat/cashew/values/errs"
 )
 
 // UseCase implemented cashew.LoginUseCase
@@ -23,7 +24,7 @@ func New(r cashew.TicketRepository) cashew.ValidateUseCase {
 // ValidateLogin execute validation for login
 func (u *UseCase) ValidateLogin(ticket *cashew.Ticket) (err error) {
 	if ticket.Type != cashew.TicketTypeLogin {
-		return errs.ErrTicketTypeNotMatched
+		return errors.NewTicketTypeError(ticket.ID, ticket.Type)
 	}
 	return u.tv.Validate(ticket)
 }
@@ -38,18 +39,18 @@ func (u *UseCase) ValidateProxy(ticket *cashew.Ticket, service *url.URL) (err er
 	return u.validateTicket(ticket, service, false, true)
 }
 
-func (u *UseCase) validateTicket(t *cashew.Ticket, service *url.URL, renew, allowProxy bool) error {
+func (u *UseCase) validateTicket(t *cashew.Ticket, service fmt.Stringer, renew, allowProxy bool) error {
 	if renew && !primary(t) {
-		return errs.ErrServiceTicketIsNoPrimary
+		return errors.ErrServiceTicketIsNotPrimary
 	}
 	if !allowProxy && t.Type == cashew.TicketTypeProxy {
-		return errs.ErrTicketIsProxyTicket
+		return errors.NewTicketTypeError(t.ID, t.Type)
 	}
 	if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeProxy {
-		return errs.ErrTicketTypeNotMatched
+		return errors.NewTicketTypeError(t.ID, t.Type)
 	}
 	if t.Service != service.String() {
-		return errs.ErrServiceURLNotMatched
+		return errors.ErrServiceURLNotMatched
 	}
 	return u.tv.Validate(t)
 }
@@ -57,7 +58,7 @@ func (u *UseCase) validateTicket(t *cashew.Ticket, service *url.URL, renew, allo
 // ValidateProxyGranting execute validation service and ticket
 func (u *UseCase) ValidateProxyGranting(ticket *cashew.Ticket) (err error) {
 	if ticket.Type != cashew.TicketTypeProxyGranting {
-		return errs.ErrTicketTypeNotMatched
+		return errors.NewTicketTypeError(ticket.ID, ticket.Type)
 	}
 
 	return u.tv.Validate(ticket)

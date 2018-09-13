@@ -29,18 +29,18 @@ const (
 
 const (
 	// TicketTypeStrService type of service ticket
-	TicketTypeStrService = "service"
+	TicketTypeStrService = "service-ticket"
 	// TicketTypeStrProxy type of proxy ticket
-	TicketTypeStrProxy = "proxy"
+	TicketTypeStrProxy = "proxy-ticket"
 	// TicketTypeStrTicketGranting type of proxy-granting ticket
-	TicketTypeStrTicketGranting = "ticket_granting_ticket"
+	TicketTypeStrTicketGranting = "ticket-granting-ticket"
 	// TicketTypeStrProxyGranting type of proxy-granting ticket
-	TicketTypeStrProxyGranting = "proxy_granting_ticket"
+	TicketTypeStrProxyGranting = "proxy-granting-ticket"
 	// TicketTypeStrProxyGrantingIOU type of proxy-granting ticket iou
 	// TODO check is this really necessary
-	TicketTypeStrProxyGrantingIOU = "proxy_granting_ticket_iou"
+	TicketTypeStrProxyGrantingIOU = "proxy-granting-ticket-iou"
 	// TicketTypeStrLogin type of login ticket
-	TicketTypeStrLogin = "login"
+	TicketTypeStrLogin = "login-ticket"
 )
 
 const (

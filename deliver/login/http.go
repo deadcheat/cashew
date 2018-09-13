@@ -14,13 +14,13 @@ import (
 	"github.com/deadcheat/goblet"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/helpers/params"
 	hs "github.com/deadcheat/cashew/helpers/strings"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
-	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/gorilla/mux"
 )
@@ -85,8 +85,8 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	tgt, err = d.tuc.Find(tgtID)
 	if err == nil {
 		err = d.vuc.ValidateLogin(tgt)
-		switch err {
-		case nil:
+		switch {
+		case err == nil:
 			if svc == nil {
 				log.Println("already logged in and no service detected")
 				mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
@@ -111,7 +111,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			// if ticket is valid, redirect to service
 			http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 			return
-		case errs.ErrTicketHasBeenExpired, errs.ErrTicketTypeNotMatched:
+		case errors.IsAppError(err):
 			log.Println(err, tgtID)
 		default:
 			log.Println(err)
@@ -269,7 +269,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	switch err {
 	case nil:
 		break
-	case errs.ErrNoServiceDetected:
+	case errors.ErrNoServiceDetected:
 		mp.AddInfo("you're successfully authenticated but no service param was given and we can't redirect anymore ")
 		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 		if err != nil {
