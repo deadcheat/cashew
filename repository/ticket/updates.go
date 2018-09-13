@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/timer"
-	"github.com/deadcheat/cashew/values/errs"
 )
 
 var (
@@ -35,7 +35,7 @@ var (
 		var count int64
 		count, err = res.RowsAffected()
 		if count == 0 {
-			return errs.ErrNoTicketID
+			return errors.ErrNoTicketID
 		}
 		return err
 	}

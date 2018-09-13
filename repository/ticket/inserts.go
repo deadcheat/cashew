@@ -4,8 +4,8 @@ import (
 	"database/sql"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/timer"
-	"github.com/deadcheat/cashew/values/errs"
 	"github.com/rs/xid"
 )
 
@@ -150,11 +150,11 @@ var (
 
 	// inserter for ticket_granting_ticket
 	insertTicketGrant ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService {
+		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeProxy && t.Type != cashew.TicketTypeProxyGranting {
 			return nil
 		}
 		if t.GrantedBy == nil {
-			return errs.ErrTicketGrantedTicketIsNotFound
+			return errors.ErrTicketGrantedTicketIsNotFound
 		}
 		stmt, err := tx.Prepare(createTicketGrantQuery)
 		if err != nil {

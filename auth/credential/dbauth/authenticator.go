@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/deadcheat/cashew/auth/credential"
-	"github.com/deadcheat/cashew/values/errs"
+	"github.com/deadcheat/cashew/errors"
 )
 
 var stmt *sql.Stmt
@@ -96,7 +96,7 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
 		return
 	}
 	if count > 1 {
-		return errs.ErrMultipleUserFound
+		return errors.ErrMultipleUserFound
 	}
 
 	// validate found user
@@ -109,12 +109,12 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
 
 func (a *Authenticator) validate(secret string, user *user) error {
 	if user == nil {
-		return errs.ErrInvalidCredentials
+		return errors.ErrInvalidCredentials
 	}
 	base := fmt.Sprintf("%s::%s", user.salt, secret)
 	crypt := fmt.Sprintf("%x", sha256.Sum256([]byte(base)))
 	if user.pass != crypt {
-		return errs.ErrInvalidCredentials
+		return errors.ErrInvalidCredentials
 	}
 	return nil
 }

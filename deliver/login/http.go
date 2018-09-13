@@ -1,4 +1,4 @@
-package http
+package login
 
 import (
 	"encoding/json"
@@ -14,13 +14,13 @@ import (
 	"github.com/deadcheat/goblet"
 
 	"github.com/deadcheat/cashew"
+	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/helpers/params"
 	hs "github.com/deadcheat/cashew/helpers/strings"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
-	"github.com/deadcheat/cashew/values/errs"
 
 	"github.com/gorilla/mux"
 )
@@ -28,14 +28,15 @@ import (
 // Deliver struct implements cashew.Deliver
 type Deliver struct {
 	r    *mux.Router
-	uc   cashew.LoginUseCase
-	louc cashew.LogoutUseCase
+	tuc  cashew.TicketUseCase
+	vuc  cashew.ValidateUseCase
+	teuc cashew.TerminateUseCase
 	auc  cashew.AuthenticateUseCase
 }
 
 // New make new Deliver
-func New(r *mux.Router, uc cashew.LoginUseCase, louc cashew.LogoutUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
-	return &Deliver{r: r, uc: uc, louc: louc, auc: auc}
+func New(r *mux.Router, tuc cashew.TicketUseCase, vuc cashew.ValidateUseCase, teuc cashew.TerminateUseCase, auc cashew.AuthenticateUseCase) cashew.Deliver {
+	return &Deliver{r: r, tuc: tuc, vuc: vuc, teuc: teuc, auc: auc}
 }
 
 // get handle GET request to /login
@@ -81,11 +82,11 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 
 	// redirect service with service ticket when tgt ticket is valid
 	var tgt *cashew.Ticket
-	tgt, err = d.uc.FindTicket(tgtID)
+	tgt, err = d.tuc.Find(tgtID)
 	if err == nil {
-		err = d.uc.ValidateTicket(cashew.TicketTypeTicketGranting, tgt)
-		switch err {
-		case nil:
+		err = d.vuc.ValidateLogin(tgt)
+		switch {
+		case err == nil:
 			if svc == nil {
 				log.Println("already logged in and no service detected")
 				mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
@@ -98,7 +99,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 			var st *cashew.Ticket
-			st, err = d.uc.ServiceTicket(r, svc, tgt, false)
+			st, err = d.tuc.NewService(r, svc, tgt, false)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)
@@ -110,7 +111,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			// if ticket is valid, redirect to service
 			http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 			return
-		case errs.ErrTicketHasBeenExpired, errs.ErrTicketTypeNotMatched:
+		case errors.IsAppError(err):
 			log.Println(err, tgtID)
 		default:
 			log.Println(err)
@@ -144,7 +145,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	ltID := ""
 	if !loggedIn {
 		var lt *cashew.Ticket
-		lt, err = d.uc.LoginTicket(r)
+		lt, err = d.tuc.NewLogin(r)
 		if err != nil {
 			return
 		}
@@ -204,7 +205,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	u = strings.Trim(u, " ")
 
 	var lt *cashew.Ticket
-	lt, err = d.uc.FindTicket(l)
+	lt, err = d.tuc.Find(l)
 	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
@@ -217,11 +218,11 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		if lt == nil {
 			return
 		}
-		if internalErr := d.uc.TerminateLoginTicket(lt); internalErr != nil {
+		if internalErr := d.teuc.Terminate(lt); internalErr != nil {
 			log.Println("login ticket deletion internal error ", internalErr)
 		}
 	}()
-	if err = d.uc.ValidateTicket(cashew.TicketTypeLogin, lt); err != nil {
+	if err = d.vuc.ValidateLogin(lt); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
@@ -249,7 +250,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
 		return
 	}
-	tgt, err = d.uc.TicketGrantingTicket(r, u, data)
+	tgt, err = d.tuc.NewGranting(r, u, data)
 	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
@@ -264,11 +265,11 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	})
 
 	var st *cashew.Ticket
-	st, err = d.uc.ServiceTicket(r, svc, tgt, true)
+	st, err = d.tuc.NewService(r, svc, tgt, true)
 	switch err {
 	case nil:
 		break
-	case errs.ErrNoServiceDetected:
+	case errors.ErrNoServiceDetected:
 		mp.AddInfo("you're successfully authenticated but no service param was given and we can't redirect anymore ")
 		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 		if err != nil {
@@ -291,77 +292,6 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, svc.String(), http.StatusSeeOther)
 }
 
-// logout handle get method request to /logout
-func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
-	var err error
-	mp := message.New()
-
-	p := r.URL.Query()
-	// FIXME i might check err
-	svc, _ := params.ServiceURL(p)
-	next, _ := params.ContinueURL(p)
-	gateways := p[consts.ParamKeyGateway]
-
-	var tgc *http.Cookie
-	tgc, err = r.Cookie(consts.CookieKeyTGT)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "failed to find ticket granting ticket in cookie", http.StatusBadRequest)
-		return
-	}
-	tgtID := tgc.Value
-	var tgt *cashew.Ticket
-	tgt, err = d.uc.FindTicket(tgtID)
-	if err == nil {
-		if err = d.louc.Terminate(tgt); err != nil {
-			log.Println(err)
-			http.Error(w, "failed to delete ticket granting ticket", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	// delete cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:    consts.CookieKeyTGT,
-		Value:   "",
-		Path:    filepath.Join("/", foundation.App().URIPath),
-		Expires: time.Unix(0, 0),
-	})
-	if hs.StringSliceContainsTrue(gateways) && svc != nil && svc.String() != "" {
-		http.Redirect(w, r, svc.String(), http.StatusSeeOther)
-		return
-	}
-	if next != nil {
-		tmp := template.New("cas logout")
-		var f *goblet.File
-		f, err = templates.Assets.File("/login/logout.html")
-		if err != nil {
-			return
-		}
-		// FIXME parse process should be done when app start
-		tmp, err = tmp.Parse(string(f.Data))
-		w.Header().Set("Content-Type", "text/html; charset=utf-8")
-		w.WriteHeader(http.StatusOK)
-		if err = tmp.Execute(w, map[string]interface{}{
-			"URIPath": foundation.App().URIPath,
-			"Next":    next.String(),
-		}); err != nil {
-			log.Println(err)
-			http.Error(w, "failed to show logout page", http.StatusInternalServerError)
-			return
-		}
-		return
-	}
-	// finally render login display
-	mp.AddInfo("You're successfully logged out.")
-	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusOK)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "failed to show page", http.StatusInternalServerError)
-		return
-	}
-}
-
 // index handle get method request to /
 func (d *Deliver) index(w http.ResponseWriter, r *http.Request) {
 	u := r.URL
@@ -376,7 +306,6 @@ func (d *Deliver) index(w http.ResponseWriter, r *http.Request) {
 // Mount route with handler
 func (d *Deliver) Mount() {
 	d.r.HandleFunc("/", d.index).Methods(http.MethodGet)
-	d.r.HandleFunc("/logout", d.logout).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.get).Methods(http.MethodGet)
 	d.r.HandleFunc("/login", d.post).Methods(http.MethodPost)
 }

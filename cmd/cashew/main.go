@@ -7,15 +7,19 @@ import (
 	"net/http"
 
 	"github.com/deadcheat/cashew/deliver/assets"
-	dl "github.com/deadcheat/cashew/deliver/login"
+	dli "github.com/deadcheat/cashew/deliver/login"
+	dlo "github.com/deadcheat/cashew/deliver/logout"
+	dp "github.com/deadcheat/cashew/deliver/proxy"
 	dv "github.com/deadcheat/cashew/deliver/validate"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/repository/host"
 	"github.com/deadcheat/cashew/repository/id"
-	"github.com/deadcheat/cashew/repository/ticket"
+	"github.com/deadcheat/cashew/repository/proxycallback"
+	tr "github.com/deadcheat/cashew/repository/ticket"
 	"github.com/deadcheat/cashew/usecase/auth"
-	"github.com/deadcheat/cashew/usecase/login"
-	"github.com/deadcheat/cashew/usecase/logout"
+	"github.com/deadcheat/cashew/usecase/terminatelogin"
+	"github.com/deadcheat/cashew/usecase/terminatelogout"
+	tu "github.com/deadcheat/cashew/usecase/ticket"
 	"github.com/deadcheat/cashew/usecase/validate"
 
 	"github.com/gorilla/mux"
@@ -48,17 +52,32 @@ func main() {
 	r := mux.NewRouter().PathPrefix(foundation.App().URIPath).Subrouter()
 
 	// create usecase, repository, deliver and mount them
-	ticketRepository := ticket.New(foundation.DB())
-	idRepository := id.New()
-	hostRepository := host.New()
-	loginUseCase := login.New(ticketRepository, idRepository, hostRepository)
-	logoutUseCase := logout.New(ticketRepository)
+	// repositories
+	ticketrep := tr.New(foundation.DB())
+	idrep := id.New()
+	hostrep := host.New()
+	pcrep := proxycallback.New()
+
+	// usecases
+	ticketUseCase := tu.New(ticketrep, idrep, hostrep, pcrep)
+	loginTerminationUseCase := terminatelogin.New(ticketrep)
+	logoutTerminationUseCase := terminatelogout.New(ticketrep)
 	authUseCase := auth.New()
-	login := dl.New(r, loginUseCase, logoutUseCase, authUseCase)
+	validateUseCase := validate.New(ticketrep)
+
+	// create deliver and mount
+	// login
+	login := dli.New(r, ticketUseCase, validateUseCase, loginTerminationUseCase, authUseCase)
 	login.Mount()
-	validateUseCase := validate.New(ticketRepository)
-	v := dv.New(r, validateUseCase)
+	// logout
+	logout := dlo.New(r, ticketUseCase, logoutTerminationUseCase)
+	logout.Mount()
+	// validate
+	v := dv.New(r, ticketUseCase, validateUseCase)
 	v.Mount()
+	// proxy
+	p := dp.New(r, ticketUseCase, validateUseCase)
+	p.Mount()
 
 	// mount to static files
 	statics := assets.New(r)
@@ -67,5 +86,10 @@ func main() {
 	// start cas server
 	bindAddress := fmt.Sprintf("%s:%d", foundation.App().Host, foundation.App().Port)
 	log.Println("start cas server on ", bindAddress)
+	if foundation.App().UseSSL {
+		log.Fatal(http.ListenAndServeTLS(bindAddress, foundation.App().SSLCertFile, foundation.App().SSLCertKey, r))
+		return
+	}
 	log.Fatal(http.ListenAndServe(bindAddress, r))
+
 }

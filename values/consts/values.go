@@ -10,10 +10,16 @@ const (
 	ParamKeyService = "service"
 	// ParamKeyURL key string for param
 	ParamKeyURL = "url"
+	// ParamKeyPgtURL key string for param
+	ParamKeyPgtURL = "pgtUrl"
 	// ParamKeyRenew key string for param
 	ParamKeyRenew = "renew"
 	// ParamKeyGateway key string for param
 	ParamKeyGateway = "gateway"
+	// ParamKeyPgt key string for param
+	ParamKeyPgt = "pgt"
+	// ParamKeyTargetService key string for param
+	ParamKeyTargetService = "targetService"
 )
 
 const (
@@ -23,18 +29,18 @@ const (
 
 const (
 	// TicketTypeStrService type of service ticket
-	TicketTypeStrService = "service"
+	TicketTypeStrService = "service-ticket"
 	// TicketTypeStrProxy type of proxy ticket
-	TicketTypeStrProxy = "proxy"
+	TicketTypeStrProxy = "proxy-ticket"
 	// TicketTypeStrTicketGranting type of proxy-granting ticket
-	TicketTypeStrTicketGranting = "ticket_granting_ticket"
+	TicketTypeStrTicketGranting = "ticket-granting-ticket"
 	// TicketTypeStrProxyGranting type of proxy-granting ticket
-	TicketTypeStrProxyGranting = "proxy_granting_ticket"
+	TicketTypeStrProxyGranting = "proxy-granting-ticket"
 	// TicketTypeStrProxyGrantingIOU type of proxy-granting ticket iou
 	// TODO check is this really necessary
-	TicketTypeStrProxyGrantingIOU = "proxy_granting_ticket_iou"
+	TicketTypeStrProxyGrantingIOU = "proxy-granting-ticket-iou"
 	// TicketTypeStrLogin type of login ticket
-	TicketTypeStrLogin = "login"
+	TicketTypeStrLogin = "login-ticket"
 )
 
 const (

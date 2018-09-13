@@ -10,14 +10,20 @@ type Deliver interface {
 	Mount()
 }
 
-// LoginUseCase define behaviors for Cas Server
-type LoginUseCase interface {
-	FindTicket(id string) (*Ticket, error)
-	ValidateTicket(TicketType, *Ticket) error
-	ServiceTicket(r *http.Request, service *url.URL, tgt *Ticket, primary bool) (*Ticket, error)
-	TicketGrantingTicket(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
-	LoginTicket(r *http.Request) (*Ticket, error)
-	TerminateLoginTicket(*Ticket) error
+// TicketUseCase define behaviors about finding and generating ticket
+type TicketUseCase interface {
+	Find(id string) (*Ticket, error)
+	NewLogin(r *http.Request) (*Ticket, error)
+	NewProxyGranting(r *http.Request, callbackURL *url.URL, st *Ticket) (*Ticket, error)
+	NewService(r *http.Request, service *url.URL, tgt *Ticket, primary bool) (*Ticket, error)
+	NewGranting(r *http.Request, username string, extraAttributes interface{}) (*Ticket, error)
+	NewProxy(r *http.Request, service string, grantedBy *Ticket) (*Ticket, error)
+	Consume(*Ticket) error
+}
+
+// TerminateUseCase define behaviors for terminate ticket
+type TerminateUseCase interface {
+	Terminate(*Ticket) error
 }
 
 // LogoutUseCase define behaviors for logout by tgt
@@ -27,7 +33,10 @@ type LogoutUseCase interface {
 
 // ValidateUseCase define behaviors for validation
 type ValidateUseCase interface {
-	Validate(ticket string, service *url.URL, renew bool) (*Ticket, error)
+	ValidateLogin(ticket *Ticket) error
+	ValidateService(ticket *Ticket, service *url.URL, renew bool) error
+	ValidateProxy(ticket *Ticket, service *url.URL) error
+	ValidateProxyGranting(ticket *Ticket) error
 }
 
 // TicketRepository repository for ticket
@@ -47,6 +56,11 @@ type IDRepository interface {
 // ClientHostNameRepository is an interface to find real-ip/hostname
 type ClientHostNameRepository interface {
 	Ensure(r *http.Request) string
+}
+
+// ProxyCallBackRepository is an interface to dial proxy-callback-url
+type ProxyCallBackRepository interface {
+	Dial(u *url.URL, pgt, iou string) error
 }
 
 // AuthenticateUseCase interface for authenticate

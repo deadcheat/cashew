@@ -28,6 +28,7 @@ const (
 	ticketLastReferenced  = "ticket_last_referenced"
 	ticketService         = "ticket_service"
 	ticketType            = "ticket_type"
+	ticketPrimary         = "ticket_primary"
 	ticketUsername        = "ticket_username"
 )
 
@@ -38,6 +39,7 @@ var (
 		ticketLastReferenced,
 		ticketService,
 		ticketType,
+		ticketPrimary,
 		ticketUsername,
 	}
 )
