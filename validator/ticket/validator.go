@@ -24,13 +24,18 @@ func New() Validator {
 
 // Check ticket validateion
 func (p *v) Validate(t *cashew.Ticket) error {
-	if timer.Local.Now().After(t.CreatedAt.Add(time.Duration(foundation.App().GrantingHardTimeout))) {
-		return errors.ErrHardTimeoutTicket
-	}
+	now := timer.Local.Now()
+	// tickets will be expired in granting-default-expire-time(default: 8 hour) from the last time ticket has been referenced
+	// this is a rule for proxy granting ticket and ticket granting ticket
 	switch t.Type {
 	case cashew.TicketTypeProxyGranting, cashew.TicketTypeTicketGranting:
-		if t.LastReferencedAt != nil && t.LastReferencedAt.After(timer.Local.Now().Add(time.Duration(foundation.App().GrantingDefaultExpire)*time.Second)) {
+		if t.LastReferencedAt != nil && now.After(t.LastReferencedAt.Add(time.Duration(foundation.App().GrantingDefaultExpire)*time.Second)) {
 			return errors.ErrTicketHasBeenExpired
+		}
+	default:
+		// hard time out will happen in default-hard-expire time(default 2hour) from ticket has been created
+		if now.Before(t.CreatedAt.Add(time.Duration(foundation.App().GrantingHardTimeout))) {
+			return errors.ErrHardTimeoutTicket
 		}
 	}
 	return nil

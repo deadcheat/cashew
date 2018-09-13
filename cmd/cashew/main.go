@@ -9,6 +9,7 @@ import (
 	"github.com/deadcheat/cashew/deliver/assets"
 	dli "github.com/deadcheat/cashew/deliver/login"
 	dlo "github.com/deadcheat/cashew/deliver/logout"
+	dp "github.com/deadcheat/cashew/deliver/proxy"
 	dv "github.com/deadcheat/cashew/deliver/validate"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/repository/host"
@@ -75,6 +76,8 @@ func main() {
 	v := dv.New(r, ticketUseCase, validateUseCase)
 	v.Mount()
 	// proxy
+	p := dp.New(r, ticketUseCase, validateUseCase)
+	p.Mount()
 
 	// mount to static files
 	statics := assets.New(r)

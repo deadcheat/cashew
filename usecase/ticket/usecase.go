@@ -91,11 +91,24 @@ func (u *UseCase) NewService(r *http.Request, service *url.URL, tgt *cashew.Tick
 }
 
 // NewProxy create new ProxyTicket
-func (u *UseCase) NewProxy(r *http.Request, service string, grantedBy *cashew.Ticket) (*cashew.Ticket, error) {
-	return nil, nil
+func (u *UseCase) NewProxy(r *http.Request, service string, grantedBy *cashew.Ticket) (t *cashew.Ticket, err error) {
+	if service == "" {
+		return nil, errors.ErrNoServiceDetected
+	}
+	t = new(cashew.Ticket)
+	t.Type = cashew.TicketTypeProxy
+	t.ID = u.idr.Issue(t.Type)
+	t.ClientHostName = u.chr.Ensure(r)
+	t.Service = service
+	t.UserName = grantedBy.UserName
+	t.GrantedBy = grantedBy
+	if err = u.r.Create(t); err != nil {
+		return nil, err
+	}
+	return
 }
 
-// NewTicketGranting create new ServiceTicket
+// NewGranting create new ServiceTicket
 func (u *UseCase) NewGranting(r *http.Request, username string, extraAttributes interface{}) (t *cashew.Ticket, err error) {
 	t = new(cashew.Ticket)
 	t.Type = cashew.TicketTypeTicketGranting

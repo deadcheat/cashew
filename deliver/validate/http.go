@@ -70,25 +70,14 @@ func (d *Deliver) proxyValidate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, checkAsProxyValidation bool) {
-
-	// serviceValidate will be rendered as utf-8 xml
-	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
-
 	var v view
-	v.Success = true
 	p := r.URL.Query()
 	// service and ticket are required parameter
 	ticket := strings.FirstString(p["ticket"])
 	svc, err := params.ServiceURL(p)
 	if err != nil || svc == nil || ticket == "" {
 		v.e = errors.ErrRequiredParameterMissed
-		err = d.showServiceValidateXML(w, r, v)
-		if err != nil {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			log.Println(err)
-			http.Error(w, "failed to show xml", http.StatusInternalServerError)
-			return
-		}
+		d.showServiceValidateXML(w, r, v)
 		return
 	}
 
@@ -107,14 +96,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
-		v.Success = false
-		err = d.showServiceValidateXML(w, r, v)
-		if err != nil {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			log.Println(err)
-			http.Error(w, "failed to show xml", http.StatusInternalServerError)
-			return
-		}
+		d.showServiceValidateXML(w, r, v)
 		return
 	}
 	if checkAsProxyValidation {
@@ -129,14 +111,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
-		v.Success = false
-		err = d.showServiceValidateXML(w, r, v)
-		if err != nil {
-			w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-			log.Println(err)
-			http.Error(w, "failed to show xml", http.StatusInternalServerError)
-			return
-		}
+		d.showServiceValidateXML(w, r, v)
 		return
 	}
 	var pgt *cashew.Ticket
@@ -147,17 +122,12 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 		if !ok {
 			v.e = errors.NewInternalError(err)
 		}
-		v.Success = false
 	} else {
+		v.Success = true
 		v.IOU = pgt.IOU
 	}
 	v.Name = st.UserName
-	err = d.showServiceValidateXML(w, r, v)
-	if err != nil {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		log.Println(err)
-		http.Error(w, "failed to show xml", http.StatusInternalServerError)
-	}
+	d.showServiceValidateXML(w, r, v)
 }
 
 type view struct {
@@ -170,7 +140,8 @@ type view struct {
 	ErrorBody string
 }
 
-func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) (err error) {
+func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) {
+	var err error
 	t := template.New("cas service validate")
 	var f *goblet.File
 	f, err = templates.Assets.File("/validate/servicevalidate.xml")
@@ -181,6 +152,8 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	if err != nil {
 		return
 	}
+	// serviceValidate will be rendered as utf-8 xml
+	w.Header().Set("Content-Type", "text/xml; charset=utf-8")
 	if v.e != nil {
 		v.ErrorCode = v.e.Code()
 		v.ErrorBody = v.e.Message()
@@ -192,7 +165,12 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 	} else {
 		w.WriteHeader(http.StatusOK)
 	}
-	return t.Execute(w, v)
+	if err = t.Execute(w, v); err != nil {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		log.Println(err)
+		http.Error(w, "failed to show xml", http.StatusInternalServerError)
+	}
+	return
 }
 
 // Mount route with handler

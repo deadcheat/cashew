@@ -33,6 +33,7 @@ func openDB(d *setting.Database) (*sql.DB, error) {
 			d.Port,
 			map[string]string{
 				"parseTime": "true",
+				"loc":       "Asia/Tokyo",
 			},
 		)
 	default:
