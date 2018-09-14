@@ -43,7 +43,6 @@ func (u *UseCase) NewLogin(r *http.Request) (t *cashew.Ticket, err error) {
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
@@ -86,7 +85,6 @@ func (u *UseCase) NewService(r *http.Request, service *url.URL, tgt *cashew.Tick
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
@@ -119,7 +117,6 @@ func (u *UseCase) NewGranting(r *http.Request, username string, extraAttributes 
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
