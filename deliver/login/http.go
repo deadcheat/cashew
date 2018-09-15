@@ -234,6 +234,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		mp.AddErr("your authentication is invalid")
+		mp.AddErr(err)
 		err = d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusUnauthorized)
 		if err != nil {
 			log.Println(err)

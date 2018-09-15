@@ -4,9 +4,9 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
+	"strings"
 
 	"github.com/deadcheat/cashew/auth/credential"
-	"github.com/deadcheat/cashew/errors"
 )
 
 var stmt *sql.Stmt
@@ -52,19 +52,31 @@ func (a *AuthenticationBuilder) createSelectStatement() string {
 	if a.saltColumn != "" {
 		saltPhrase = fmt.Sprintf("target.%s", a.saltColumn)
 	}
-	return fmt.Sprintf(queryBase, a.userNameColumn, a.passWordColumn, saltPhrase, a.table, a.userNameColumn)
+	attributeSlice := make([]string, len(a.attributes))
+	i := 0
+	for k, v := range a.attributes {
+		attributeSlice[i] = fmt.Sprintf(attributeQueryFormat, k, v)
+		i++
+	}
+	attributePhrase := strings.Join(attributeSlice, "\n")
+	queryFormat := fmt.Sprintf("%s%s%s", selectBaseFormat, attributePhrase, fromFormat)
+	return fmt.Sprintf(queryFormat, a.userNameColumn, a.passWordColumn, saltPhrase, a.table, a.userNameColumn)
 }
 
 var (
-	queryBase = `SELECT
+	selectBaseFormat = `SELECT
   target.%s as user,
   target.%s as password,
   %s as salt
+`
+
+	fromFormat = `
 FROM 
   %s target
 WHERE
   target.%s = ?
 `
+	attributeQueryFormat = "  , %s as %s"
 )
 
 type user struct {
@@ -79,7 +91,7 @@ func (a *Authenticator) Close() error {
 }
 
 // Authenticate implement method for auth.Authenticator
-func (a *Authenticator) Authenticate(c *credential.Entity) (attr Attributes, err error) {
+func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attributes, err error) {
 	var r *sql.Rows
 	r, err = stmt.Query(c.Key)
 	if err != nil {
@@ -99,7 +111,7 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr Attributes, err
 		return
 	}
 	if count > 1 {
-		return errors.ErrMultipleUserFound
+		return nil, credential.ErrMultipleUserFound
 	}
 
 	// validate found user
@@ -107,17 +119,17 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr Attributes, err
 		return
 	}
 
-	return nil
+	return nil, nil
 }
 
 func (a *Authenticator) validate(secret string, user *user) error {
 	if user == nil {
-		return errors.ErrInvalidCredentials
+		return credential.ErrAuthenticateFailed
 	}
 	base := fmt.Sprintf("%s::%s", user.salt, secret)
 	crypt := fmt.Sprintf("%x", sha256.Sum256([]byte(base)))
 	if user.pass != crypt {
-		return errors.ErrInvalidCredentials
+		return credential.ErrAuthenticateFailed
 	}
 	return nil
 }

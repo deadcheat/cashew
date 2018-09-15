@@ -8,6 +8,9 @@ import (
 var (
 	// ErrAuthenticateFailed 認証エラー
 	ErrAuthenticateFailed = errors.New("authentication failed")
+
+	// ErrMultipleUserFound defined error when multiple users matched identification
+	ErrMultipleUserFound = errors.New("there are many users to match user/password")
 )
 
 // Authenticator authentic interface
