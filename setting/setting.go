@@ -61,12 +61,28 @@ type Authenticator struct {
 
 // AuthDatabase struct of database setting
 type AuthDatabase struct {
-	*Database        `yaml:"database"`
-	Table            string            `yaml:"table"`
-	UserNameColumn   string            `yaml:"user_name_column"`
-	PasswordColumn   string            `yaml:"password_column"`
-	SaltColumn       string            `yaml:"salt_column"`
-	CustomAttributes []CustomAttribute `yaml:"custom_attributes"`
+	*Database         `yaml:"database"`
+	Table             string `yaml:"table"`
+	UserNameColumn    string `yaml:"user_name_column"`
+	PasswordColumn    string `yaml:"password_column"`
+	SaltColumn        string `yaml:"salt_column"`
+	*CustomAttributes `yaml:"custom_attributes"`
+}
+
+// CustomAttributes type alias to CustomAttribute slice
+type CustomAttributes []CustomAttribute
+
+// ToMap return map[string]string from []CustomAttribute
+func (c *CustomAttributes) ToMap() (attr map[string]string) {
+	attr = make(map[string]string)
+	if c == nil {
+		return
+	}
+	cas := *c
+	for i := range cas {
+		attr[cas[i].ColumnName] = cas[i].Name
+	}
+	return
 }
 
 // LDAP struct of LDAP authenticator

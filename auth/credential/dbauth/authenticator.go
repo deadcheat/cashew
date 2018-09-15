@@ -21,16 +21,19 @@ type AuthenticationBuilder struct {
 	userNameColumn string
 	passWordColumn string
 	saltColumn     string
+	attributes     map[string]string
 }
 
 // NewAuthenticationBuilder create new builder
-func NewAuthenticationBuilder(db *sql.DB, table, userNameColumn, passWordColumn, saltColumn string) credential.AuthenticationBuilder {
+func NewAuthenticationBuilder(db *sql.DB, table, userNameColumn, passWordColumn, saltColumn string, attributes map[string]string) credential.AuthenticationBuilder {
+
 	return &AuthenticationBuilder{
 		db:             db,
 		table:          table,
 		userNameColumn: userNameColumn,
 		passWordColumn: passWordColumn,
 		saltColumn:     saltColumn,
+		attributes:     attributes,
 	}
 }
 
@@ -76,7 +79,7 @@ func (a *Authenticator) Close() error {
 }
 
 // Authenticate implement method for auth.Authenticator
-func (a *Authenticator) Authenticate(c *credential.Entity) (err error) {
+func (a *Authenticator) Authenticate(c *credential.Entity) (attr Attributes, err error) {
 	var r *sql.Rows
 	r, err = stmt.Query(c.Key)
 	if err != nil {

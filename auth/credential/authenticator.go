@@ -12,7 +12,7 @@ var (
 
 // Authenticator authentic interface
 type Authenticator interface {
-	Authenticate(c *Entity) error
+	Authenticate(c *Entity) (Attributes, error)
 	io.Closer
 }
 
@@ -26,3 +26,6 @@ type Entity struct {
 	Key    string
 	Secret string
 }
+
+// Attributes have extra-attributes
+type Attributes map[string]interface{}
