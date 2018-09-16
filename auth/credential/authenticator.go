@@ -32,3 +32,8 @@ type Entity struct {
 
 // Attributes have extra-attributes
 type Attributes map[string]interface{}
+
+// Set is a setter for map
+func (a Attributes) Set(k string, v interface{}) {
+	a[k] = v
+}

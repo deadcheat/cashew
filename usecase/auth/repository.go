@@ -16,10 +16,11 @@ func New() cashew.AuthenticateUseCase {
 }
 
 // Authenticate return error if id/pass is not valid
-func (u Usecase) Authenticate(id, pass string) error {
+func (u Usecase) Authenticate(id, pass string) (map[string]interface{}, error) {
 	e := credential.Entity{
 		Key:    id,
 		Secret: pass,
 	}
-	return foundation.Authenticator().Authenticate(&e)
+	attr, err := foundation.Authenticator().Authenticate(&e)
+	return attr, err
 }

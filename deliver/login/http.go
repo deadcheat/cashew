@@ -230,11 +230,11 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// authenticate
-	if err = d.auc.Authenticate(u, pa); err != nil {
+	var attr map[string]interface{}
+	if attr, err = d.auc.Authenticate(u, pa); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
-		mp.AddErr("your authentication is invalid")
-		mp.AddErr(err)
+		mp.AddErr("your authentication is invalid: " + err.Error())
 		err = d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusUnauthorized)
 		if err != nil {
 			log.Println(err)
@@ -245,7 +245,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 	// FIXME for now, we don't get any external attributes
 	var tgt *cashew.Ticket
-	data, err := json.Marshal(struct{}{})
+	data, err := json.Marshal(attr)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)

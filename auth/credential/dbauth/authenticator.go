@@ -4,12 +4,18 @@ import (
 	"crypto/sha256"
 	"database/sql"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/deadcheat/cashew/auth/credential"
 )
 
-var stmt *sql.Stmt
+// define singleton elements
+var (
+	stmt           *sql.Stmt
+	attributeSpec  map[string]string
+	attributeNames []string
+)
 
 // Authenticator implement auth.Authenticator
 type Authenticator struct{}
@@ -43,6 +49,13 @@ func (a *AuthenticationBuilder) Build() (credential.Authenticator, error) {
 	stmt, err = a.db.Prepare(a.createSelectStatement())
 	if err != nil {
 		return nil, err
+	}
+	attributeSpec = a.attributes
+	attributeNames = make([]string, len(attributeSpec))
+	i := 0
+	for _, v := range attributeSpec {
+		attributeNames[i] = v
+		i++
 	}
 	return new(Authenticator), nil
 }
@@ -97,12 +110,24 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 	if err != nil {
 		return
 	}
-	defer r.Close()
+	defer func() {
+		if err = r.Close(); err != nil {
+			log.Println("[WARN]failed to close rows: ", err)
+		}
+	}()
 	count := 0
 	var u *user
+	attrValues := make([]interface{}, len(attributeNames))
+	attrPointers := make([]interface{}, len(attrValues)+3)
+	attrPointers[0] = &u.name
+	attrPointers[1] = &u.pass
+	attrPointers[2] = &u.salt
+	for i := range attrValues {
+		attrPointers[i+3] = &attrValues[i]
+	}
 	for r.Next() {
 		u = new(user)
-		if err = r.Scan(&u.name, &u.pass, &u.salt); err != nil {
+		if err = r.Scan(attrPointers...); err != nil {
 			return
 		}
 		count++
@@ -119,7 +144,11 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		return
 	}
 
-	return nil, nil
+	for i := range attrValues {
+		attr.Set(attributeNames[i], attrValues[i])
+	}
+
+	return
 }
 
 func (a *Authenticator) validate(secret string, user *user) error {

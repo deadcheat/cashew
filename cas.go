@@ -65,5 +65,5 @@ type ProxyCallBackRepository interface {
 
 // AuthenticateUseCase interface for authenticate
 type AuthenticateUseCase interface {
-	Authenticate(id, pass string) error
+	Authenticate(id, pass string) (map[string]interface{}, error)
 }

@@ -117,7 +117,7 @@ var (
 		SSLCertKey:              "",
 		Host:                    "127.0.0.1",
 		Port:                    3000,
-		URIPath:                 "/",
+		URIPath:                 "",
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,
