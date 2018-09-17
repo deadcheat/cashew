@@ -11,6 +11,7 @@ import (
 	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	vh "github.com/deadcheat/cashew/helpers/view"
+	"github.com/deadcheat/cashew/templates"
 	"github.com/gorilla/mux"
 )
 

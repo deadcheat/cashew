@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/deadcheat/cashew/auth/credential"
-	"github.com/k0kubun/pp"
 )
 
 // define singleton elements
@@ -132,7 +131,6 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		}
 		count++
 	}
-	pp.Println(attrValues)
 	if err = r.Err(); err != nil {
 		return
 	}

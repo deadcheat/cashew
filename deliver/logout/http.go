@@ -16,6 +16,7 @@ import (
 	hs "github.com/deadcheat/cashew/helpers/strings"
 	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/provider/message"
+	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
 
 	"github.com/gorilla/mux"
