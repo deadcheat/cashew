@@ -14,8 +14,8 @@ import (
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/helpers/params"
 	hs "github.com/deadcheat/cashew/helpers/strings"
+	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/provider/message"
-	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
 
 	"github.com/gorilla/mux"
@@ -54,9 +54,9 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 		}
 		ltID = lt.ID
 	}
-	t := template.New("cas login")
+	t := template.New("cas logout").Funcs(vh.FuncMap)
 	var f *goblet.File
-	f, err = templates.Assets.File("/login/index.html")
+	f, err = templates.Assets.File("/files/login/index.html")
 	if err != nil {
 		return
 	}
@@ -65,7 +65,6 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(sc)
 	return t.Execute(w, map[string]interface{}{
-		"URIPath":     foundation.App().URIPath,
 		"Service":     service,
 		"LoginTicket": ltID,
 		"Messages":    messages,
@@ -117,9 +116,9 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if next != nil {
-		tmp := template.New("cas logout")
+		tmp := template.New("cas logout").Funcs(vh.FuncMap)
 		var f *goblet.File
-		f, err = templates.Assets.File("/login/logout.html")
+		f, err = templates.Assets.File("/files/login/logout.html")
 		if err != nil {
 			return
 		}
@@ -128,8 +127,7 @@ func (d *Deliver) logout(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
 		if err = tmp.Execute(w, map[string]interface{}{
-			"URIPath": foundation.App().URIPath,
-			"Next":    next.String(),
+			"Next": next.String(),
 		}); err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show logout page", http.StatusInternalServerError)

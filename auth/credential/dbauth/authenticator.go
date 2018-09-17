@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/deadcheat/cashew/auth/credential"
+	"github.com/k0kubun/pp"
 )
 
 // define singleton elements
@@ -116,7 +117,7 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		}
 	}()
 	count := 0
-	var u *user
+	u := new(user)
 	attrValues := make([]interface{}, len(attributeNames))
 	attrPointers := make([]interface{}, len(attrValues)+3)
 	attrPointers[0] = &u.name
@@ -126,12 +127,12 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		attrPointers[i+3] = &attrValues[i]
 	}
 	for r.Next() {
-		u = new(user)
 		if err = r.Scan(attrPointers...); err != nil {
 			return
 		}
 		count++
 	}
+	pp.Println(attrValues)
 	if err = r.Err(); err != nil {
 		return
 	}
@@ -144,6 +145,7 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		return
 	}
 
+	attr = make(credential.Attributes)
 	for i := range attrValues {
 		attr.Set(attributeNames[i], attrValues[i])
 	}

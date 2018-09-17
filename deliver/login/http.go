@@ -18,6 +18,7 @@ import (
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/deadcheat/cashew/helpers/params"
 	hs "github.com/deadcheat/cashew/helpers/strings"
+	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
@@ -151,7 +152,7 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 		}
 		ltID = lt.ID
 	}
-	t := template.New("cas login")
+	t := template.New("cas login").Funcs(vh.FuncMap)
 	var f *goblet.File
 	f, err = templates.Assets.File("/login/index.html")
 	if err != nil {
@@ -162,7 +163,6 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(sc)
 	return t.Execute(w, map[string]interface{}{
-		"URIPath":     foundation.App().URIPath,
 		"Service":     service,
 		"LoginTicket": ltID,
 		"Messages":    messages,
@@ -245,11 +245,14 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	}
 	// FIXME for now, we don't get any external attributes
 	var tgt *cashew.Ticket
-	data, err := json.Marshal(attr)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
-		return
+	var data []byte
+	if attr != nil {
+		data, err = json.Marshal(attr)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
+			return
+		}
 	}
 	tgt, err = d.tuc.NewGranting(r, u, data)
 	if err != nil {

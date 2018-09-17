@@ -11,7 +11,7 @@ import (
 	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
-	"github.com/deadcheat/cashew/templates"
+	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/values/consts"
 	"github.com/deadcheat/goblet"
 	"github.com/gorilla/mux"
@@ -142,9 +142,9 @@ type view struct {
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) {
 	var err error
-	t := template.New("cas service validate")
+	t := template.New("cas service validate").Funcs(vh.FuncMap)
 	var f *goblet.File
-	f, err = templates.Assets.File("/validate/servicevalidate.xml")
+	f, err = templates.Assets.File("/files/validate/servicevalidate.xml")
 	if err != nil {
 		return
 	}
