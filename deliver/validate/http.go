@@ -12,8 +12,8 @@ import (
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
 	vh "github.com/deadcheat/cashew/helpers/view"
-	"github.com/deadcheat/cashew/values/consts"
 	"github.com/deadcheat/cashew/templates"
+	"github.com/deadcheat/cashew/values/consts"
 	"github.com/deadcheat/goblet"
 	"github.com/gorilla/mux"
 )
@@ -125,20 +125,27 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 		}
 	} else {
 		v.Success = true
+	}
+	if pgt != nil {
 		v.IOU = pgt.IOU
 	}
 	v.Name = st.UserName
+	attr, ok := st.ExtraAttributes.(map[string]interface{})
+	if ok {
+		v.ExtraAttributes = attr
+	}
 	d.showServiceValidateXML(w, r, v)
 }
 
 type view struct {
-	Success   bool
-	Name      string
-	IOU       string
-	Proxies   []*url.URL
-	e         errors.ErrorView
-	ErrorCode string
-	ErrorBody string
+	Success         bool
+	Name            string
+	IOU             string
+	Proxies         []*url.URL
+	ExtraAttributes map[string]interface{}
+	e               errors.ErrorView
+	ErrorCode       string
+	ErrorBody       string
 }
 
 func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request, v view) {

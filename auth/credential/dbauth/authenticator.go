@@ -12,9 +12,10 @@ import (
 
 // define singleton elements
 var (
-	stmt           *sql.Stmt
-	attributeSpec  map[string]string
-	attributeNames []string
+	stmt             *sql.Stmt
+	attributeSpec    map[string]string
+	attributeNames   []string
+	attributeColumns []string
 )
 
 // Authenticator implement auth.Authenticator
@@ -45,17 +46,19 @@ func NewAuthenticationBuilder(db *sql.DB, table, userNameColumn, passWordColumn,
 
 // Build prepare authenticate environment and prepare statement
 func (a *AuthenticationBuilder) Build() (credential.Authenticator, error) {
+	attributeSpec = a.attributes
+	attributeColumns = make([]string, len(attributeSpec))
+	attributeNames = make([]string, len(attributeSpec))
+	i := 0
+	for k, v := range attributeSpec {
+		attributeColumns[i] = k
+		attributeNames[i] = v
+		i++
+	}
 	var err error
 	stmt, err = a.db.Prepare(a.createSelectStatement())
 	if err != nil {
 		return nil, err
-	}
-	attributeSpec = a.attributes
-	attributeNames = make([]string, len(attributeSpec))
-	i := 0
-	for _, v := range attributeSpec {
-		attributeNames[i] = v
-		i++
 	}
 	return new(Authenticator), nil
 }
@@ -66,9 +69,8 @@ func (a *AuthenticationBuilder) createSelectStatement() string {
 		saltPhrase = fmt.Sprintf("target.%s", a.saltColumn)
 	}
 	attributeSlice := make([]string, len(a.attributes))
-	i := 0
-	for k, v := range a.attributes {
-		attributeSlice[i] = fmt.Sprintf(attributeQueryFormat, k, v)
+	for i, v := range attributeColumns {
+		attributeSlice[i] = fmt.Sprintf(attributeQueryFormat, v, attributeNames[i])
 		i++
 	}
 	attributePhrase := strings.Join(attributeSlice, "\n")

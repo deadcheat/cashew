@@ -7,6 +7,13 @@
         {{ range $p := .Proxies }}
         <cas:proxy>{{ $p }}</cas:proxy>
         {{ end }}
+        {{ if gt (len .ExtraAttributes) 0 }}
+        <cas:attributes>
+        {{ range $key, $attr := .ExtraAttributes }}
+        <cas:{{ $key }}>{{ $attr }}</cas:{{ $key }}>
+        {{ end }}
+        </cas:attributes>
+        {{ end }}
         </cas:proxies>{{ end }}
     </cas:authenticationSuccess>{{ else }}
     <cas:authenticationFailure code="{{ .ErrorCode }}">

@@ -34,6 +34,7 @@ type LogoutUseCase interface {
 // ValidateUseCase define behaviors for validation
 type ValidateUseCase interface {
 	ValidateLogin(ticket *Ticket) error
+	ValidateGranting(ticket *Ticket) error
 	ValidateService(ticket *Ticket, service *url.URL, renew bool) error
 	ValidateProxy(ticket *Ticket, service *url.URL) error
 	ValidateProxyGranting(ticket *Ticket) error

@@ -135,7 +135,7 @@ var (
 
 	// inserter for ticket_extra_attributes
 	insertTicketExtraAttributes ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeTicketGranting {
+		if t.Type == cashew.TicketTypeLogin || t.ExtraAttributes == nil {
 			return nil
 		}
 		stmt, err := tx.Prepare(createTicketExtraAttributesQuery)

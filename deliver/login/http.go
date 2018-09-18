@@ -85,7 +85,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	var tgt *cashew.Ticket
 	tgt, err = d.tuc.Find(tgtID)
 	if err == nil {
-		err = d.vuc.ValidateLogin(tgt)
+		err = d.vuc.ValidateGranting(tgt)
 		switch {
 		case err == nil:
 			if svc == nil {
