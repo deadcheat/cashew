@@ -32,7 +32,7 @@ var Assets = goblet.NewFS(
 		"/files/proxy":                        goblet.NewFile("/files/proxy", nil, 0x800001ed, time.Unix(1537005745, 1537005745719603764)),
 		"/files/proxy/proxy.xml":              goblet.NewFile("/files/proxy/proxy.xml", []byte(_Assets39007ceb50a14baba29c4d2d7f13cfcc597931ca), 0x1a4, time.Unix(1537005745, 1537005745719809185)),
 		"/files/validate":                     goblet.NewFile("/files/validate", nil, 0x800001ed, time.Unix(1537005745, 1537005745726209597)),
-		"/files/validate/servicevalidate.xml": goblet.NewFile("/files/validate/servicevalidate.xml", []byte(_Assetsdd5750ddeceedefd4ff68902c2496f670da48609), 0x1a4, time.Unix(1537282572, 1537282572220910076)),
+		"/files/validate/servicevalidate.xml": goblet.NewFile("/files/validate/servicevalidate.xml", []byte(_Assetsdd5750ddeceedefd4ff68902c2496f670da48609), 0x1a4, time.Unix(1537286875, 1537286875640909426)),
 	},
 )
 
@@ -43,6 +43,6 @@ var (
 
 	_Assets39007ceb50a14baba29c4d2d7f13cfcc597931ca = "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .Success }}\n    <cas:proxySuccess>\n        <cas:proxyTicket>{{ .Ticket }}</cas:proxyTicket>\n    </cas:proxySuccess>{{ else }}\n    <cas:proxyFailure code=\"{{ .ErrorCode }}\">\n        {{ .ErrorBody }}\n    </cas:proxyFailure>{{ end }}\n</cas:serviceResponse>\n"
 
-	_Assetsdd5750ddeceedefd4ff68902c2496f670da48609 = "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .Success }}\n    <cas:authenticationSuccess>\n        <cas:user>{{ .Name }}</cas:user>{{ if ne .IOU \"\" }}\n        <cas:proxyGrantingTicket>{{ .IOU }}</cas:proxyGrantingTicket>{{ end }}\n        {{ if gt (len .Proxies) 0 }}\n        <cas:proxies>\n        {{ range $p := .Proxies }}\n        <cas:proxy>{{ $p }}</cas:proxy>\n        {{ end }}\n        {{ if gt (len .ExtraAttributes) 0 }}\n        <cas:attributes>\n        {{ range $key, $attr := .ExtraAttributes }}\n        <cas:{{ $key }}>{{ $attr }}</cas:{{ $key }}>\n        {{ end }}\n        </cas:attributes>\n        {{ end }}\n        </cas:proxies>{{ end }}\n    </cas:authenticationSuccess>{{ else }}\n    <cas:authenticationFailure code=\"{{ .ErrorCode }}\">\n        {{ .ErrorBody }}\n    </cas:authenticationFailure>{{ end }}\n</cas:serviceResponse>\n"
+	_Assetsdd5750ddeceedefd4ff68902c2496f670da48609 = "<cas:serviceResponse xmlns:cas='http://www.yale.edu/tp/cas'>{{ if .Success }}\n    <cas:authenticationSuccess>\n        <cas:user>{{ .Name }}</cas:user>{{ if ne .IOU \"\" }}\n        <cas:proxyGrantingTicket>{{ .IOU }}</cas:proxyGrantingTicket>{{ end }}\n        {{ if gt (len .Proxies) 0 }}\n        <cas:proxies>\n        {{ range $p := .Proxies }}\n        <cas:proxy>{{ $p }}</cas:proxy>\n        {{ end }}\n        </cas:proxies>{{ end }}\n        {{ if gt (len .ExtraAttributes) 0 }}\n        <cas:attributes>\n        {{ range $index, $element := .ExtraAttributes }}\n        <cas:{{ $index |safe }}>{{ $element }}</cas:{{ $index |safe }}>\n        {{ end }}\n        </cas:attributes>{{ end }}\n    </cas:authenticationSuccess>{{ else }}\n    <cas:authenticationFailure code=\"{{ .ErrorCode }}\">\n        {{ .ErrorBody }}\n    </cas:authenticationFailure>{{ end }}\n</cas:serviceResponse>\n"
 )
 
