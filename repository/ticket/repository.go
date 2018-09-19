@@ -2,7 +2,6 @@ package ticket
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 
 	"github.com/deadcheat/cashew"
@@ -149,10 +148,7 @@ func (r *Repository) findTicket(id string) (ticket *cashew.Ticket, granterTicket
 	}
 
 	if len(extraAttributes) > 0 {
-		err = json.Unmarshal(extraAttributes, &ticket.ExtraAttributes)
-		if err != nil {
-			return nil, "", err
-		}
+		ticket.ExtraAttributes = extraAttributes
 	}
 
 	ticket.Primary = primaryTicket.Valid
@@ -181,7 +177,7 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			service         sql.NullString
 			userName        sql.NullString
 			iou             sql.NullString
-			extraAttributes interface{}
+			extraAttributes []byte
 			primaryTicket   sql.NullString
 		)
 		err = rows.Scan(
@@ -222,6 +218,10 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			// NullString always return nil as error
 			tmp, _ := userName.Value()
 			ticket.UserName = tmp.(string)
+		}
+
+		if len(extraAttributes) > 0 {
+			ticket.ExtraAttributes = extraAttributes
 		}
 
 		ticket.Primary = primaryTicket.Valid

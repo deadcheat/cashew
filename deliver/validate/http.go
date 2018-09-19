@@ -1,16 +1,17 @@
 package validate
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"net/url"
 
 	"github.com/deadcheat/cashew"
 	"github.com/deadcheat/cashew/errors"
 	"github.com/deadcheat/cashew/helpers/params"
 	"github.com/deadcheat/cashew/helpers/strings"
+	"github.com/deadcheat/cashew/helpers/tickets"
 	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/templates"
 	"github.com/deadcheat/cashew/values/consts"
@@ -63,14 +64,22 @@ func (d *Deliver) validate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *Deliver) serviceValidate(w http.ResponseWriter, r *http.Request) {
-	d.fragmentValidate(w, r, false)
+	d.fragmentValidate(w, r, false, false)
 }
 
 func (d *Deliver) proxyValidate(w http.ResponseWriter, r *http.Request) {
-	d.fragmentValidate(w, r, true)
+	d.fragmentValidate(w, r, true, false)
 }
 
-func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, checkAsProxyValidation bool) {
+func (d *Deliver) p3ServiceValidate(w http.ResponseWriter, r *http.Request) {
+	d.fragmentValidate(w, r, false, true)
+}
+
+func (d *Deliver) p3ProxyValidate(w http.ResponseWriter, r *http.Request) {
+	d.fragmentValidate(w, r, true, true)
+}
+
+func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, proxyMode, withExtraAttributes bool) {
 	var v view
 	p := r.URL.Query()
 	// service and ticket are required parameter
@@ -100,7 +109,7 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 		d.showServiceValidateXML(w, r, v)
 		return
 	}
-	if checkAsProxyValidation {
+	if proxyMode {
 		err = d.vuc.ValidateProxy(st, svc)
 	} else {
 		err = d.vuc.ValidateService(st, svc, strings.StringSliceContainsTrue(renews))
@@ -129,10 +138,20 @@ func (d *Deliver) fragmentValidate(w http.ResponseWriter, r *http.Request, check
 	if pgt != nil {
 		v.IOU = pgt.IOU
 	}
+	if proxyMode {
+		v.Proxies = tickets.ProxyServices(pgt)
+	}
 	v.Name = st.UserName
-	attr, ok := st.ExtraAttributes.(map[string]interface{})
-	if ok {
-		v.ExtraAttributes = attr
+	if withExtraAttributes {
+		attr, ok := st.ExtraAttributes.([]uint8)
+		if ok {
+			var attrMap map[string]interface{}
+			if err = json.Unmarshal(attr, &attrMap); err != nil {
+				v.e = errors.NewInternalError(err)
+			} else {
+				v.ExtraAttributes = attrMap
+			}
+		}
 	}
 	d.showServiceValidateXML(w, r, v)
 }
@@ -141,7 +160,7 @@ type view struct {
 	Success         bool
 	Name            string
 	IOU             string
-	Proxies         []*url.URL
+	Proxies         []string
 	ExtraAttributes map[string]interface{}
 	e               errors.ErrorView
 	ErrorCode       string
@@ -178,7 +197,6 @@ func (d *Deliver) showServiceValidateXML(w http.ResponseWriter, r *http.Request,
 		log.Println(err)
 		http.Error(w, "failed to show xml", http.StatusInternalServerError)
 	}
-	return
 }
 
 // Mount route with handler
@@ -186,4 +204,6 @@ func (d *Deliver) Mount() {
 	d.r.HandleFunc("/validate", d.validate).Methods(http.MethodGet)
 	d.r.HandleFunc("/serviceValidate", d.serviceValidate).Methods(http.MethodGet)
 	d.r.HandleFunc("/proxyValidate", d.proxyValidate).Methods(http.MethodGet)
+	d.r.HandleFunc("/p3/serviceValidate", d.p3ServiceValidate).Methods(http.MethodGet)
+	d.r.HandleFunc("/p3/proxyValidate", d.p3ProxyValidate).Methods(http.MethodGet)
 }

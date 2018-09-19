@@ -113,23 +113,25 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 		return
 	}
 	defer func() {
-		if err = r.Close(); err != nil {
-			log.Println("[WARN]failed to close rows: ", err)
+		if closeErr := r.Close(); closeErr != nil {
+			log.Println("[WARN]failed to close rows: ", closeErr)
+			err = closeErr
 		}
 	}()
 	count := 0
+	var nullableSalt sql.NullString
 	u := new(user)
 	attrValues := make([]interface{}, len(attributeNames))
 	attrPointers := make([]interface{}, len(attrValues)+3)
 	attrPointers[0] = &u.name
 	attrPointers[1] = &u.pass
-	attrPointers[2] = &u.salt
+	attrPointers[2] = &nullableSalt
 	for i := range attrValues {
 		attrPointers[i+3] = &attrValues[i]
 	}
 	for r.Next() {
 		if err = r.Scan(attrPointers...); err != nil {
-			return
+			return nil, err
 		}
 		count++
 	}
@@ -144,10 +146,17 @@ func (a *Authenticator) Authenticate(c *credential.Entity) (attr credential.Attr
 	if err = a.validate(c.Secret, u); err != nil {
 		return
 	}
-
+	if nullableSalt.Valid {
+		u.salt = nullableSalt.String
+	}
 	attr = make(credential.Attributes)
 	for i := range attrValues {
-		attr.Set(attributeNames[i], attrValues[i])
+		switch t := attrValues[i].(type) {
+		case []uint8:
+			attr.Set(attributeNames[i], string(t))
+		default:
+			attr.Set(attributeNames[i], attrValues[i])
+		}
 	}
 
 	return

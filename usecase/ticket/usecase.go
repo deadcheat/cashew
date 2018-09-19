@@ -57,6 +57,7 @@ func (u *UseCase) NewProxyGranting(r *http.Request, callbackURL *url.URL, st *ca
 	t.ID = u.idr.Issue(t.Type)
 	t.IOU = u.idr.Issue(cashew.TicketTypeProxyGrantingIOU)
 	t.ClientHostName = u.chr.Ensure(r)
+	t.UserName = st.UserName
 	t.GrantedBy = st
 	t.ExtraAttributes = st.ExtraAttributes
 

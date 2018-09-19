@@ -101,6 +101,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			}
 			var st *cashew.Ticket
 			st, err = d.tuc.NewService(r, svc, tgt, false)
+			fmt.Println("hoge- ", err)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)
@@ -231,7 +232,8 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 
 	// authenticate
 	var attr map[string]interface{}
-	if attr, err = d.auc.Authenticate(u, pa); err != nil {
+	attr, err = d.auc.Authenticate(u, pa)
+	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
 		mp.AddErr("your authentication is invalid: " + err.Error())
@@ -243,17 +245,21 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	// FIXME for now, we don't get any external attributes
-	var tgt *cashew.Ticket
-	var data []byte
+	var data interface{}
 	if attr != nil {
-		data, err = json.Marshal(attr)
+		var dataBytes []byte
+		dataBytes, err = json.Marshal(attr)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to convert extra attributes", http.StatusBadRequest)
 			return
 		}
+		if len(dataBytes) > 0 {
+			data = dataBytes
+		}
 	}
+
+	var tgt *cashew.Ticket
 	tgt, err = d.tuc.NewGranting(r, u, data)
 	if err != nil {
 		// FIXME redirect to /login with service url
