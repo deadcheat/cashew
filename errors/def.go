@@ -10,6 +10,9 @@ import (
 var (
 	// --- ErrorCodeInvalidRequest
 
+	// ErrAuthenticateFailed authentication failed
+	ErrAuthenticateFailed = New(ErrorCodeInvalidRequest, errors.New("authentication failed"))
+
 	// ErrRequiredParameterMissed request has been sent without rquired parameters
 	ErrRequiredParameterMissed = New(ErrorCodeInvalidRequest, errors.New("required parameters are not satisfied"))
 
@@ -21,9 +24,6 @@ var (
 
 	// ErrInvalidCredentials error that inputed credentials are not validated successfully
 	ErrInvalidCredentials = New(ErrorCodeInvalidRequest, errors.New("your credential is not validated"))
-
-	// ErrMultipleUserFound defined error when multiple users matched identification
-	ErrMultipleUserFound = New(ErrorCodeInvalidRequest, errors.New("there are many users to match user/password"))
 
 	// ---  ErrorCodeInvalidTicket
 

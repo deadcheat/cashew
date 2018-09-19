@@ -50,7 +50,7 @@ var (
 
 	// inserter for ticket_service
 	insertTicketService ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService {
+		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeProxy {
 			return nil
 		}
 		stmt, err := tx.Prepare(createTicketServiceQuery)
@@ -65,7 +65,7 @@ var (
 
 	// inserter for ticket_username
 	insertTicketUserName ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeService && t.Type != cashew.TicketTypeTicketGranting {
+		if t.Type == cashew.TicketTypeLogin {
 			return nil
 		}
 		stmt, err := tx.Prepare(createTicketUsernameQuery)
@@ -135,7 +135,7 @@ var (
 
 	// inserter for ticket_extra_attributes
 	insertTicketExtraAttributes ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
-		if t.Type != cashew.TicketTypeTicketGranting {
+		if t.Type == cashew.TicketTypeLogin || t.ExtraAttributes == nil {
 			return nil
 		}
 		stmt, err := tx.Prepare(createTicketExtraAttributesQuery)

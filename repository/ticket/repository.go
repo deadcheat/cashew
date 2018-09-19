@@ -98,7 +98,7 @@ func (r *Repository) findTicket(id string) (ticket *cashew.Ticket, granterTicket
 		grantedBy       sql.NullString
 		userName        sql.NullString
 		iou             sql.NullString
-		extraAttributes interface{}
+		extraAttributes []byte
 		primaryTicket   sql.NullString
 	)
 	err = row.Scan(
@@ -147,6 +147,10 @@ func (r *Repository) findTicket(id string) (ticket *cashew.Ticket, granterTicket
 		granterTicketID, _ = tmp.(string)
 	}
 
+	if len(extraAttributes) > 0 {
+		ticket.ExtraAttributes = extraAttributes
+	}
+
 	ticket.Primary = primaryTicket.Valid
 	return
 }
@@ -173,7 +177,7 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			service         sql.NullString
 			userName        sql.NullString
 			iou             sql.NullString
-			extraAttributes interface{}
+			extraAttributes []byte
 			primaryTicket   sql.NullString
 		)
 		err = rows.Scan(
@@ -214,6 +218,10 @@ func (r *Repository) findAllRelatedTicket(id string) (ts []*cashew.Ticket, err e
 			// NullString always return nil as error
 			tmp, _ := userName.Value()
 			ticket.UserName = tmp.(string)
+		}
+
+		if len(extraAttributes) > 0 {
+			ticket.ExtraAttributes = extraAttributes
 		}
 
 		ticket.Primary = primaryTicket.Valid

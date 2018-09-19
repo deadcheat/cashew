@@ -29,6 +29,14 @@ func (u *UseCase) ValidateLogin(ticket *cashew.Ticket) (err error) {
 	return u.tv.Validate(ticket)
 }
 
+// ValidateGranting execute validation for ticket-granting-ticket
+func (u *UseCase) ValidateGranting(ticket *cashew.Ticket) (err error) {
+	if ticket.Type != cashew.TicketTypeTicketGranting {
+		return errors.NewTicketTypeError(ticket.ID, ticket.Type)
+	}
+	return u.tv.Validate(ticket)
+}
+
 // ValidateService execute validation service and ticket
 func (u *UseCase) ValidateService(ticket *cashew.Ticket, service *url.URL, renew bool) (err error) {
 	return u.validateTicket(ticket, service, renew, false)

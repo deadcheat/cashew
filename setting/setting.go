@@ -56,34 +56,57 @@ type Database struct {
 type Authenticator struct {
 	Driver        string `yaml:"driver"`
 	*AuthDatabase `yaml:"dbauth"`
-	*LDAP         `yaml:"ldapauth"`
+	// *LDAP         `yaml:"ldapauth"`
 }
 
 // AuthDatabase struct of database setting
 type AuthDatabase struct {
-	*Database      `yaml:"database"`
-	Table          string `yaml:"table"`
-	UserNameColumn string `yaml:"user_name_column"`
-	PasswordColumn string `yaml:"password_column"`
-	SaltColumn     string `yaml:"salt_column"`
+	*Database         `yaml:"database"`
+	Table             string `yaml:"table"`
+	UserNameColumn    string `yaml:"user_name_column"`
+	PasswordColumn    string `yaml:"password_column"`
+	SaltColumn        string `yaml:"salt_column"`
+	*CustomAttributes `yaml:"custom_attributes"`
+}
+
+// CustomAttributes type alias to CustomAttribute slice
+type CustomAttributes []CustomAttribute
+
+// ToMap return map[string]string from []CustomAttribute
+func (c *CustomAttributes) ToMap() (attr map[string]string) {
+	attr = make(map[string]string)
+	if c == nil {
+		return
+	}
+	cas := *c
+	for i := range cas {
+		attr[cas[i].ColumnName] = cas[i].Name
+	}
+	return
 }
 
 // LDAP struct of LDAP authenticator
 // FIXME when someone implement LDAP mode
-type LDAP struct {
-	Host         string `yaml:"host"`
-	Port         int    `yaml:"port"`
-	BindDN       string `yaml:"bind_dn"`
-	BindPassword string `yaml:"bind_password"`
-	BaseDN       string `yaml:"base_dn"`
-	Filter       string `yaml:"filter"`
-}
+// type LDAP struct {
+// 	Host         string `yaml:"host"`
+// 	Port         int    `yaml:"port"`
+// 	BindDN       string `yaml:"bind_dn"`
+// 	BindPassword string `yaml:"bind_password"`
+// 	BaseDN       string `yaml:"base_dn"`
+// 	Filter       string `yaml:"filter"`
+// }
 
 // Logging struct for logging setting
 type Logging struct {
 	Driver   string `yaml:"driver"`
 	FileName string `yaml:"file"`
 	LogLevel string `yaml:"level"`
+}
+
+// CustomAttribute struct for custom-attributes
+type CustomAttribute struct {
+	Name       string `yaml:"name"`
+	ColumnName string `yaml:"column_name"`
 }
 
 var (
@@ -94,7 +117,7 @@ var (
 		SSLCertKey:              "",
 		Host:                    "127.0.0.1",
 		Port:                    3000,
-		URIPath:                 "/",
+		URIPath:                 "",
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,

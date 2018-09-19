@@ -57,6 +57,16 @@ ticket_number_of_each_users: 20
 #     password_column: password
 ### if you use salt for authentication, write your salt-column
 #     salt_column: salt
+### do you want some custom attributes ? so, configure that
+### name is an element's name to output
+### column_name is a name to be used when select from db
+#     custom_attributes:
+#       - name: user_id
+#         column_name: id
+#       - name: display_name
+#         column_name: display_name
+#       - name: user_age
+#         column_name: age
 
 ### Log Setting
 ### NOTE: This doesn't work correctly yet.

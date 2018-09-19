@@ -29,7 +29,7 @@ func assignAuthenticator(a *setting.Authenticator) (credential.Authenticator, er
 		if err != nil {
 			return nil, err
 		}
-		b := dbauth.NewAuthenticationBuilder(authDB, dbInfo.Table, dbInfo.UserNameColumn, dbInfo.PasswordColumn, dbInfo.SaltColumn)
+		b := dbauth.NewAuthenticationBuilder(authDB, dbInfo.Table, dbInfo.UserNameColumn, dbInfo.PasswordColumn, dbInfo.SaltColumn, dbInfo.CustomAttributes.ToMap())
 		return b.Build()
 	}
 	return nil, fmt.Errorf("unknown driver: %s", driver)

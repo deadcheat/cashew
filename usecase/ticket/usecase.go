@@ -43,7 +43,6 @@ func (u *UseCase) NewLogin(r *http.Request) (t *cashew.Ticket, err error) {
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
@@ -58,7 +57,9 @@ func (u *UseCase) NewProxyGranting(r *http.Request, callbackURL *url.URL, st *ca
 	t.ID = u.idr.Issue(t.Type)
 	t.IOU = u.idr.Issue(cashew.TicketTypeProxyGrantingIOU)
 	t.ClientHostName = u.chr.Ensure(r)
+	t.UserName = st.UserName
 	t.GrantedBy = st
+	t.ExtraAttributes = st.ExtraAttributes
 
 	if err = u.pcr.Dial(callbackURL, t.ID, t.IOU); err != nil {
 		return nil, err
@@ -82,11 +83,11 @@ func (u *UseCase) NewService(r *http.Request, service *url.URL, tgt *cashew.Tick
 	t.Service = service.String()
 	t.UserName = tgt.UserName
 	t.GrantedBy = tgt
+	t.ExtraAttributes = tgt.ExtraAttributes
 	t.Primary = primary
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
@@ -100,6 +101,7 @@ func (u *UseCase) NewProxy(r *http.Request, service string, grantedBy *cashew.Ti
 	t.ID = u.idr.Issue(t.Type)
 	t.ClientHostName = u.chr.Ensure(r)
 	t.Service = service
+	t.ExtraAttributes = grantedBy.ExtraAttributes
 	t.UserName = grantedBy.UserName
 	t.GrantedBy = grantedBy
 	if err = u.r.Create(t); err != nil {
@@ -119,7 +121,6 @@ func (u *UseCase) NewGranting(r *http.Request, username string, extraAttributes 
 	if err = u.r.Create(t); err != nil {
 		return nil, err
 	}
-
 	return
 }
 
