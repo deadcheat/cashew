@@ -29,6 +29,7 @@ func openDB(d *setting.Database) (*sql.DB, error) {
 			d.Name,
 			d.User,
 			d.Pass,
+			d.Socket,
 			d.Host,
 			d.Port,
 			map[string]string{
