@@ -44,13 +44,14 @@ type App struct {
 
 // Database struct of database setting
 type Database struct {
-	Driver string `yaml:"driver"`
-	Name   string `yaml:"name"`
-	User   string `yaml:"user"`
-	Pass   string `yaml:"pass"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
-	Socket string `yaml:"socket"`
+	Driver     string            `yaml:"driver"`
+	Name       string            `yaml:"name"`
+	User       string            `yaml:"user"`
+	Pass       string            `yaml:"pass"`
+	Host       string            `yaml:"host"`
+	Port       int               `yaml:"port"`
+	Socket     string            `yaml:"socket"`
+	Parameters map[string]string `yaml:"parameters"`
 }
 
 // Authenticator struct of authenticator setting

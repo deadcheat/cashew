@@ -35,6 +35,8 @@ func openDB(d *setting.Database) (*sql.DB, error) {
 			map[string]string{
 				"parseTime": "true",
 				"loc":       "Asia/Tokyo",
+				"charset":   "utf8mb4,utf8",
+				"collation": "utf8mb4_bin",
 			},
 		)
 	default:

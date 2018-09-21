@@ -38,6 +38,12 @@ func TestLoad(t *testing.T) {
 			Pass:   "password",
 			Host:   "localhost",
 			Port:   3306,
+			Parameters: map[string]string{
+				"parseTime": "true",
+				"loc":       "Asia/Tokyo",
+				"charset":   "utf8mb4,utf8",
+				"collation": "utf8mb4_bin",
+			},
 		},
 		Authenticator: &setting.Authenticator{
 			Driver: "database",
@@ -49,6 +55,12 @@ func TestLoad(t *testing.T) {
 					Pass:   "rolepass",
 					Host:   "localhost",
 					Port:   3306,
+					Parameters: map[string]string{
+						"parseTime": "true",
+						"loc":       "Asia/Tokyo",
+						"charset":   "utf8mb4,utf8",
+						"collation": "utf8mb4_bin",
+					},
 				},
 				Table:          "auth",
 				UserNameColumn: "admin",
