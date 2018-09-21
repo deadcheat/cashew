@@ -24,8 +24,8 @@ authenticator:
       host: localhost
       port: 3306
     table: auth
-    user_name_key: admin
-    password_key: password
+    user_name_column: admin
+    password_column: password
 
 logging:
   driver: file

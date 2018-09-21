@@ -22,12 +22,15 @@ var (
 
 func TestLoad(t *testing.T) {
 	expected := &setting.App{
-		UseSSL:      false,
-		SSLCertFile: "",
-		SSLCertKey:  "",
-		Host:        "localhost",
-		Port:        3000,
-		URIPath:     "/cas",
+		UseSSL:                  false,
+		SSLCertFile:             "",
+		SSLCertKey:              "",
+		Host:                    "localhost",
+		Port:                    3000,
+		URIPath:                 "/cas",
+		GrantingDefaultExpire:   7200,
+		GrantingHardTimeout:     28800,
+		TicketNumberOfEachUsers: 20,
 		Database: &setting.Database{
 			Driver: "mysql",
 			Name:   "casdb",
@@ -47,11 +50,10 @@ func TestLoad(t *testing.T) {
 					Host:   "localhost",
 					Port:   3306,
 				},
-				Table:       "auth",
-				UserNameKey: "admin",
-				PasswordKey: "password",
+				Table:          "auth",
+				UserNameColumn: "admin",
+				PasswordColumn: "password",
 			},
-			LDAP: nil,
 		},
 		Logging: &setting.Logging{
 			Driver:   "file",
@@ -63,16 +65,16 @@ func TestLoad(t *testing.T) {
 	dir, _ := os.Getwd()
 	path := filepath.Join(dir, fileName)
 	l := new(Loader)
-	s, err := l.Load(path)
+	actual, err := l.Load(path)
 	if err != nil {
 		t.Errorf("test failed by error %#+v", err)
 	}
 
-	if !reflect.DeepEqual(expected, s) {
+	if !reflect.DeepEqual(expected, actual) {
 		t.Errorf(`returned value check failed \n
 			expected: %#+v \n
 			actual  : %#+v \n
-		`, expected, s)
+		`, expected, actual)
 	}
 }
 

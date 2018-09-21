@@ -50,6 +50,7 @@ type Database struct {
 	Pass   string `yaml:"pass"`
 	Host   string `yaml:"host"`
 	Port   int    `yaml:"port"`
+	Socket string `yaml:"socket"`
 }
 
 // Authenticator struct of authenticator setting
