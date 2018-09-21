@@ -41,10 +41,12 @@ func (c *Connector) Open() (*sql.DB, error) {
 	for k, v := range c.Params {
 		params.Add(k, v)
 	}
+	protocol := "unix"
 	destination := c.Socket
 	if destination == "" {
+		protocol = "tcp"
 		destination = fmt.Sprintf("%s:%d", c.Host, c.Port)
 	}
-	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?%s", c.User, c.Pass, destination, c.Name, params.Encode())
+	dsn := fmt.Sprintf("%s:%s@%s(%s)/%s?%s", c.User, c.Pass, protocol, destination, c.Name, params.Encode())
 	return sql.Open("mysql", dsn)
 }

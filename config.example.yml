@@ -31,7 +31,6 @@ ticket_number_of_each_users: 20
 
 ### Database Setting
 ### Set up the database connection
-### NOTE: This doesn't work correctly yet.
 # database:
 #   driver: mysql
 #   name: casdb
@@ -41,7 +40,6 @@ ticket_number_of_each_users: 20
 #   port: 3306
 
 ### Authenticator Setting
-### NOTE: This doesn't work correctly yet.
 # authenticator:
 #   driver: database
 #   dbauth:
