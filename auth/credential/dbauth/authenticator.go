@@ -71,7 +71,6 @@ func (a *AuthenticationBuilder) createSelectStatement() string {
 	attributeSlice := make([]string, len(a.attributes))
 	for i, v := range attributeColumns {
 		attributeSlice[i] = fmt.Sprintf(attributeQueryFormat, v, attributeNames[i])
-		i++
 	}
 	attributePhrase := strings.Join(attributeSlice, "\n")
 	queryFormat := fmt.Sprintf("%s%s%s", selectBaseFormat, attributePhrase, fromFormat)
