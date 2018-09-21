@@ -30,26 +30,35 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func main() {
-	var err error
-	// load setting
-	var configFile string
-	flag.StringVar(&configFile, "c", "config.yml", "specify config file path")
-	flag.Parse()
-	err = foundation.Load(configFile)
-	if err != nil {
-		log.Fatalf("failed to load config file %s \n", configFile)
+func prepareApp(configFile string) (err error) {
+
+	// load config
+	if err = foundation.Load(configFile); err != nil {
+		return fmt.Errorf("failed to load config file %s \n", configFile)
 	}
+
 	// start database
-	err = foundation.StartDatabase()
-	if err != nil {
-		log.Fatalf("failed to start database %+v \n", err)
+	if err = foundation.StartDatabase(); err != nil {
+		return fmt.Errorf("failed to start database %+v \n", err)
 	}
 
 	// prepare authenticator
-	err = foundation.PrepareAuthenticator()
-	if err != nil {
-		log.Fatalf("failed to prepare authenticator %+v \n", err)
+	if err = foundation.PrepareAuthenticator(); err != nil {
+		return fmt.Errorf("failed to prepare authenticator %+v \n", err)
+	}
+
+	return nil
+}
+
+func main() {
+	var err error
+	var configFile string
+
+	flag.StringVar(&configFile, "c", "config.yml", "specify config file path")
+	flag.Parse()
+
+	if err = prepareApp(configFile); err != nil {
+		log.Fatalln(err)
 	}
 	defer foundation.Authenticator().Close()
 
