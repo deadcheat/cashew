@@ -10,6 +10,11 @@ type Deliver interface {
 	Mount()
 }
 
+// Executer is an interface as cli processor
+type Executer interface {
+	Execute()
+}
+
 // TicketUseCase define behaviors about finding and generating ticket
 type TicketUseCase interface {
 	Find(id string) (*Ticket, error)
