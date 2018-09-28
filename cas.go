@@ -73,3 +73,13 @@ type ProxyCallBackRepository interface {
 type AuthenticateUseCase interface {
 	Authenticate(id, pass string) (map[string]interface{}, error)
 }
+
+// ExpirationUseCase interface for expiration check
+type ExpirationUseCase interface {
+	RevokeAll() error
+}
+
+// ExpirationRepository repository interface that find all expired items
+type ExpirationRepository interface {
+	FindAll() ([]*Ticket, error)
+}
