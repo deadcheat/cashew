@@ -54,7 +54,7 @@ func main() {
 	// for example, if cmd was run at 19:20 and run every 30 minute,
 	// 19:30 is a first run and every 30 minutes from then
 	var cancel func()
-	cancel, err = c.Every(1).Second().From(startTime).Run(e.Execute)
+	cancel, err = c.Every(foundation.App().ExpirationCheckInterval).Minute().From(startTime).Run(e.Execute)
 	if err != nil {
 		log.Fatal(err)
 	}
