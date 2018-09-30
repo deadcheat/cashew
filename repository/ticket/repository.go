@@ -55,7 +55,7 @@ func (r *Repository) executeWithTx(tx *sql.Tx, accessors []ticketAccessor, t *ca
 }
 
 func (r *Repository) executeTicketAccessors(tx *sql.Tx, accessors []ticketAccessor, t *cashew.Ticket) (err error) {
-	// FIXME if executer process increased wait-queues
+	// FIXME if executor process increased wait-queues
 	for i := range accessors {
 		if err = accessors[i](tx, t); err != nil {
 			return err
