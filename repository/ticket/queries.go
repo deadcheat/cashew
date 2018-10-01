@@ -75,33 +75,4 @@ const (
   WHERE
     tgt.source_ticket_id = ?
 `
-
-	selectByTimeoutTicketQuery = `SELECT
-    t.id,
-    tt.type,
-    t.client_hostname,
-    t.created_at,
-    tlr.last_referenced_at,
-    ts.service,
-    tu.username,
-    i.iou,
-    tea.extra_attribute,
-    gt.id granted_by,
-    tp.ticket_id as has_primary
-  FROM tickets T
-    LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
-    LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
-    LEFT JOIN ticket_last_referenced tlr ON t.id = tlr.ticket_id
-    LEFT JOIN ticket_iou i ON t.id = i.ticket_id
-    LEFT JOIN ticket_username tu ON t.id = tu.ticket_id
-    LEFT JOIN ticket_extra_attribute tea ON t.id = tea.ticket_id
-    LEFT JOIN ticket_grant_ticket tgt ON t.id = tgt.destination_ticket_id
-    LEFT JOIN tickets gt ON tgt.source_ticket_id = gt.id
-    LEFT JOIN ticket_primary tp ON t.id = tp.ticket_id
-  WHERE
-    tlr.last_referenced_at <= ? 
-  OR
-    t.created_at <= ?
-  ;
-  `
 )
