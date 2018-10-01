@@ -11,7 +11,7 @@ import (
 
 	"github.com/deadcheat/cashew/timer"
 
-	"github.com/deadcheat/cashew/executer/expiration"
+	"github.com/deadcheat/cashew/executor/expiration"
 	"github.com/deadcheat/cashew/foundation"
 	"github.com/kawasin73/htask/cron"
 )

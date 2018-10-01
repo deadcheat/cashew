@@ -10,8 +10,8 @@ type Deliver interface {
 	Mount()
 }
 
-// Executer is an interface as cli processor
-type Executer interface {
+// Executor is an interface as cli processor
+type Executor interface {
 	Execute()
 }
 
