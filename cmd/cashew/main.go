@@ -41,6 +41,7 @@ func main() {
 		log.Fatalln(err)
 	}
 	defer foundation.Authenticator().Close()
+	defer foundation.DB().Close()
 
 	// create router
 	r := mux.NewRouter().PathPrefix(foundation.App().URIPath).Subrouter()
