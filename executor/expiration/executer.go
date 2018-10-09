@@ -7,13 +7,17 @@ import (
 )
 
 // Executor is a struct as receiver implements Executor interface
-type Executor struct{}
+type Executor struct {
+	eu cashew.ExpirationUseCase
+}
 
-func New() cashew.Executor {
+func New(eu cashew.ExpirationUseCase) cashew.Executor {
 	return &Executor{}
 }
 
 // Execute is implement for Executor interface and do batch process for expiration
 func (e *Executor) Execute() {
-	log.Println("hoge")
+	if err := e.eu.RevokeAll(); err != nil {
+		log.Println(err)
+	}
 }

@@ -13,6 +13,9 @@ import (
 
 	"github.com/deadcheat/cashew/executor/expiration"
 	"github.com/deadcheat/cashew/foundation"
+	er "github.com/deadcheat/cashew/repository/expiration"
+	tr "github.com/deadcheat/cashew/repository/ticket"
+	uc "github.com/deadcheat/cashew/usecase/expiration"
 	"github.com/kawasin73/htask/cron"
 )
 
@@ -48,7 +51,10 @@ func main() {
 		Workers: workers,
 	})
 	defer c.Close()
-	e := expiration.New()
+	ere := er.New(foundation.DB())
+	tre := tr.New(foundation.DB())
+	euc := uc.New(ere, tre)
+	e := expiration.New(euc)
 
 	// every n minute from start time
 	// for example, if cmd was run at 19:20 and run every 30 minute,
