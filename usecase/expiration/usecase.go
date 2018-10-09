@@ -25,7 +25,7 @@ func (u *UseCase) RevokeAll() error {
 	for i := range tickets {
 		ticket := tickets[i]
 		if err = u.tr.DeleteRelatedTicket(ticket); err != nil {
-			return
+			return err
 		}
 	}
 	return nil
