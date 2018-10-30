@@ -10,6 +10,11 @@ type Deliver interface {
 	Mount()
 }
 
+// Executor is an interface as cli processor
+type Executor interface {
+	Execute()
+}
+
 // TicketUseCase define behaviors about finding and generating ticket
 type TicketUseCase interface {
 	Find(id string) (*Ticket, error)
@@ -67,4 +72,14 @@ type ProxyCallBackRepository interface {
 // AuthenticateUseCase interface for authenticate
 type AuthenticateUseCase interface {
 	Authenticate(id, pass string) (map[string]interface{}, error)
+}
+
+// ExpirationUseCase interface for expiration check
+type ExpirationUseCase interface {
+	RevokeAll() error
+}
+
+// ExpirationRepository repository interface that find all expired items
+type ExpirationRepository interface {
+	FindAll() ([]*Ticket, error)
 }

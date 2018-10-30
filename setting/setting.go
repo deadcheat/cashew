@@ -14,6 +14,10 @@ type App struct {
 	Host        string `yaml:"host"`
 	Port        int    `yaml:"port"`
 
+	// ExpirationCheckInterval is a value of interval minute, used only in cashew-isolator
+	// cashew-isolator is checking expiration of each tickets and delete all of them
+	ExpirationCheckInterval int `yaml:"expiration_check_interval"`
+
 	// GrantingDefaultExpire is seconds from last used for deletion ticket
 	// This value will be set as second.
 	// (T|P)GT will expires 7,200s (2 hour) as default.
@@ -44,12 +48,14 @@ type App struct {
 
 // Database struct of database setting
 type Database struct {
-	Driver string `yaml:"driver"`
-	Name   string `yaml:"name"`
-	User   string `yaml:"user"`
-	Pass   string `yaml:"pass"`
-	Host   string `yaml:"host"`
-	Port   int    `yaml:"port"`
+	Driver     string            `yaml:"driver"`
+	Name       string            `yaml:"name"`
+	User       string            `yaml:"user"`
+	Pass       string            `yaml:"pass"`
+	Host       string            `yaml:"host"`
+	Port       int               `yaml:"port"`
+	Socket     string            `yaml:"socket"`
+	Parameters map[string]string `yaml:"parameters"`
 }
 
 // Authenticator struct of authenticator setting
@@ -118,6 +124,7 @@ var (
 		Host:                    "127.0.0.1",
 		Port:                    3000,
 		URIPath:                 "",
+		ExpirationCheckInterval: 30,
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,

@@ -12,6 +12,11 @@ database:
   pass: password
   host: localhost
   port: 3306
+  parameters:
+    parseTime: true
+    loc:       Asia/Tokyo
+    charset:   utf8mb4,utf8
+    collation: utf8mb4_bin
 
 authenticator:
   driver: database
@@ -23,9 +28,14 @@ authenticator:
       pass: rolepass
       host: localhost
       port: 3306
+      parameters:
+        parseTime: true
+        loc:       Asia/Tokyo
+        charset:   utf8mb4,utf8
+        collation: utf8mb4_bin
     table: auth
-    user_name_key: admin
-    password_key: password
+    user_name_column: admin
+    password_column: password
 
 logging:
   driver: file

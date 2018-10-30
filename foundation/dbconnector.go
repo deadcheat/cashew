@@ -29,12 +29,10 @@ func openDB(d *setting.Database) (*sql.DB, error) {
 			d.Name,
 			d.User,
 			d.Pass,
+			d.Socket,
 			d.Host,
 			d.Port,
-			map[string]string{
-				"parseTime": "true",
-				"loc":       "Asia/Tokyo",
-			},
+			d.Parameters,
 		)
 	default:
 		return nil, fmt.Errorf("unknown driver: %s", driver)

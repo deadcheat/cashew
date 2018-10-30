@@ -37,6 +37,7 @@ func TestCreateSelectStatement(t *testing.T) {
 		saltColumn:     "test_salt",
 		attributes:     testAttributes,
 	}
+	testee.Build()
 	expected := `SELECT
   target.test_user_name as user,
   target.test_password as password,
