@@ -81,10 +81,6 @@ func main() {
 	// start cas server
 	bindAddress := fmt.Sprintf("%s:%d", foundation.App().Host, foundation.App().Port)
 	log.Println("start cas server on ", bindAddress)
-	if foundation.App().UseSSL {
-		log.Fatal(http.ListenAndServeTLS(bindAddress, foundation.App().SSLCertFile, foundation.App().SSLCertKey, r))
-		return
-	}
 	server := &http.Server{
 		Addr:    bindAddress,
 		Handler: r,
