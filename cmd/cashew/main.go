@@ -108,7 +108,8 @@ func main() {
 	<-stop
 
 	// シグナルを受け取ったらShutdown
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	if err := server.Shutdown(ctx); err != nil {
 		log.Fatalln(err)
 	}
