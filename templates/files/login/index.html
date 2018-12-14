@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>login - istyle Central Login</title>
+    <title>login - Central Authentication Service</title>
     <link rel="stylesheet" href="{{ parseURI "/assets/css/font-awesome.min.css" }}">
     <!-- Bulma Version 0.7.1-->
     <link rel="stylesheet" href="{{ parseURI "/assets/css/bulma.min.css" }}" />
@@ -39,7 +39,7 @@
             <div class="container has-text-centered">
                 {{ if not .LoggedIn }}
                 <div class="column is-4 is-offset-4">
-                    <h3 class="title has-text-grey">istyle Central Login</h3>
+                    <h3 class="title has-text-grey">Central Authentication Service Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
                     <div class="box">
                         <form method="post" action="{{ parseURI "/login" }}">

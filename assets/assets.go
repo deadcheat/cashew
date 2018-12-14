@@ -26,10 +26,10 @@ var Assets = goblet.NewFS(
 	},
 	map[string]*goblet.File{
 		"/files":                          goblet.NewFile("/files", nil, 0x800001ed, time.Unix(1535549520, 1535549520642767259)),
-		"/files/css":                      goblet.NewFile("/files/css", nil, 0x800001ed, time.Unix(1537078826, 1537078826527251194)),
+		"/files/css":                      goblet.NewFile("/files/css", nil, 0x800001ed, time.Unix(1537798570, 1537798570984159392)),
 		"/files/css/base.css":             goblet.NewFile("/files/css/base.css", []byte(_Assets0afc0094106f45f5871f8ea5bc24d4d159812f51), 0x1a4, time.Unix(1535549520, 1535549520634562361)),
 		"/files/css/bulma.min.css":        goblet.NewFile("/files/css/bulma.min.css", []byte(_Assets140cdfdb043a7d464fc6f6dd875e4a3243de186a), 0x1a4, time.Unix(1535549520, 1535549520638406889)),
-		"/files/css/font-awesome.min.css": goblet.NewFile("/files/css/font-awesome.min.css", []byte(_Assetsdcef067bdd3d64a4fd8d1f9b4ab701a025006bd3), 0x1a4, time.Unix(1537078826, 1537078826527000000)),
+		"/files/css/font-awesome.min.css": goblet.NewFile("/files/css/font-awesome.min.css", []byte(_Assetsdcef067bdd3d64a4fd8d1f9b4ab701a025006bd3), 0x1a4, time.Unix(1537798570, 1537798570984504108)),
 		"/files/images":                   goblet.NewFile("/files/images", nil, 0x800001ed, time.Unix(1535549520, 1535549520639145578)),
 		"/files/images/success.jpg":       goblet.NewFile("/files/images/success.jpg", []byte(_Assets7114bd01310767774078cb279eeec1ded827abe5), 0x1a4, time.Unix(1535549520, 1535549520642489070)),
 		"/files/ttf":                      goblet.NewFile("/files/ttf", nil, 0x800001ed, time.Unix(1535549520, 1535549520642881260)),
