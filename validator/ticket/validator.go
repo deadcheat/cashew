@@ -34,7 +34,7 @@ func (p *v) Validate(t *cashew.Ticket) error {
 		}
 	default:
 		// hard time out will happen in default-hard-expire time(default 2hour) from ticket has been created
-		if now.Before(t.CreatedAt.Add(time.Duration(foundation.App().GrantingHardTimeout) * time.Second)) {
+		if now.After(t.CreatedAt.Add(time.Duration(foundation.App().GrantingHardTimeout) * time.Second)) {
 			return errors.ErrHardTimeoutTicket
 		}
 	}
