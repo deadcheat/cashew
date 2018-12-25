@@ -22,12 +22,28 @@ import (
 func main() {
 	var err error
 	var configFile string
+	var runOnce bool
 
 	flag.StringVar(&configFile, "c", "config.yml", "specify config file path")
+	flag.BoolVar(&runOnce, "once", false, "run only once")
 	flag.Parse()
 
 	if err = foundation.PrepareApp(configFile); err != nil {
 		log.Fatalln(err)
+	}
+	defer foundation.Authenticator().Close()
+	defer foundation.DB().Close()
+
+	ere := er.New(foundation.DB())
+	tre := tr.New(foundation.DB())
+	euc := uc.New(ere, tre)
+	e := expiration.New(euc)
+
+	if runOnce {
+		log.Printf("cashew-isolator start now with run-once-mode")
+		e.Execute()
+		log.Printf("cashew-isolator ended with run-once-mode, good bye")
+		return
 	}
 
 	var wg sync.WaitGroup
@@ -51,10 +67,6 @@ func main() {
 		Workers: workers,
 	})
 	defer c.Close()
-	ere := er.New(foundation.DB())
-	tre := tr.New(foundation.DB())
-	euc := uc.New(ere, tre)
-	e := expiration.New(euc)
 
 	// every n minute from start time
 	// for example, if cmd was run at 19:20 and run every 30 minute,

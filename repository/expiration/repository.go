@@ -27,7 +27,12 @@ func (r *Repository) FindAll() (ts []*cashew.Ticket, err error) {
 
 	var stmt *sql.Stmt
 
-	inQuery := strings.Join([]string{cashew.TicketTypeTicketGranting.String(), cashew.TicketTypeProxyGranting.String()}, " ,")
+	targetTicketTypes := []string{cashew.TicketTypeTicketGranting.String(), cashew.TicketTypeProxyGranting.String()}
+	for i, ttt := range targetTicketTypes {
+		targetTicketTypes[i] = fmt.Sprintf("'%s'", ttt)
+	}
+
+	inQuery := strings.Join(targetTicketTypes, " ,")
 
 	stmt, err = r.db.Prepare(fmt.Sprintf(selectByTimeoutTicketQuery, inQuery))
 	if err != nil {
@@ -36,8 +41,8 @@ func (r *Repository) FindAll() (ts []*cashew.Ticket, err error) {
 	defer stmt.Close()
 	var rows *sql.Rows
 	now := timer.Local.Now()
-	hardTimeOut := now.Add(time.Second * time.Duration(foundation.App().GrantingHardTimeout))
-	timeOut := now.Add(time.Second * time.Duration(foundation.App().GrantingDefaultExpire))
+	hardTimeOut := now.Add(-1 * time.Second * time.Duration(foundation.App().GrantingHardTimeout))
+	timeOut := now.Add(-1 * time.Second * time.Duration(foundation.App().GrantingDefaultExpire))
 	rows, err = stmt.Query(timeOut, hardTimeOut)
 	if err != nil {
 		return

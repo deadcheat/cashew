@@ -37,7 +37,7 @@ const (
     tea.extra_attribute,
     gt.id granted_by,
     tp.ticket_id as has_primary
-  FROM tickets T
+  FROM tickets t
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
     LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
     LEFT JOIN ticket_last_referenced tlr ON t.id = tlr.ticket_id
@@ -63,7 +63,7 @@ const (
     i.iou,
     tea.extra_attribute,
     tp.ticket_id as has_primary
-  FROM tickets T
+  FROM tickets t
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id
     LEFT JOIN ticket_service ts ON t.id = ts.ticket_id
     LEFT JOIN ticket_last_referenced tlr ON t.id = tlr.ticket_id

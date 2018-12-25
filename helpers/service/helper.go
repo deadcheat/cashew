@@ -21,5 +21,5 @@ func NormalizeURL(u string) (*url.URL, error) {
 		return nil, err
 	}
 	urlVal.RawQuery = urlVal.Query().Encode()
-	return url.Parse(purell.NormalizeURL(urlVal, purell.FlagsAllGreedy))
+	return url.Parse(purell.NormalizeURL(urlVal, purell.FlagsUsuallySafeGreedy))
 }

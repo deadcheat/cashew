@@ -101,7 +101,6 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 			}
 			var st *cashew.Ticket
 			st, err = d.tuc.NewService(r, svc, tgt, false)
-			fmt.Println("hoge- ", err)
 			if err != nil {
 				log.Println(err)
 				http.Error(w, "failed to issue service ticket", http.StatusInternalServerError)

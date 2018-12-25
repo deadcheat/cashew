@@ -36,7 +36,7 @@ func TestNormalizeURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "remove trailingslash last '&' in query params for \"http://example.com/?ticket=12345&\"",
+			name: "remove trailing slash last '&' in query params for \"http://example.com/?ticket=12345&\"",
 			args: args{u: "http://example.com/?ticket=12345&"},
 			want: &url.URL{
 				Scheme:   "http",
@@ -46,7 +46,17 @@ func TestNormalizeURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "unexcape query and url for \"http%3A%2F%2Fexample.com%2F%3Fticket%3D12345\"",
+			name: "unescape query and url for \"https%3A%2F%2Fexample.com%2F%3Fticket%3D12345\"",
+			args: args{u: "https%3A%2F%2Fexample.com%2F%3Fticket%3D12345"},
+			want: &url.URL{
+				Scheme:   "https",
+				Host:     "example.com",
+				RawQuery: "ticket=12345",
+			},
+			wantErr: false,
+		},
+		{
+			name: "unescape query and url for \"http%3A%2F%2Fexample.com%2F%3Fticket%3D12345\"",
 			args: args{u: "http%3A%2F%2Fexample.com%2F%3Fticket%3D12345"},
 			want: &url.URL{
 				Scheme:   "http",

@@ -12,7 +12,7 @@ type Executor struct {
 }
 
 func New(eu cashew.ExpirationUseCase) cashew.Executor {
-	return &Executor{}
+	return &Executor{eu}
 }
 
 // Execute is implement for Executor interface and do batch process for expiration
