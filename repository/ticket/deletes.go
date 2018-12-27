@@ -3,19 +3,18 @@ package ticket
 import (
 	"database/sql"
 	"fmt"
-	"log"
 
 	"github.com/deadcheat/cashew"
 )
 
-// deleters
+// delete implements for service ticket
 var deleteServiceAccessors = []ticketAccessor{
 	deleteAllRelatedTables,
 	deleteGrantedServiceTicket,
 	deleteTicket,
 }
 
-// deleters
+// delete implements for granting ticket
 var deleteGrantingTicketAccessors = []ticketAccessor{
 	deleteAllRelatedTables,
 	deleteGrantingTicket,
@@ -49,7 +48,6 @@ var (
 	deleteAllRelatedTables ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
 		for i := range ticketRelatedTables {
 			err := func() error {
-				log.Printf("delete from %s", ticketRelatedTables[i])
 				stmt, err := tx.Prepare(fmt.Sprintf(deleteSomeRelatedTableQeury, ticketRelatedTables[i]))
 				if err != nil {
 					return err
@@ -64,7 +62,7 @@ var (
 		}
 		return nil
 	}
-	// delete  granted service ticeket
+	// delete  granted service ticket
 	deleteGrantedServiceTicket ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
 		stmt, err := tx.Prepare(deleteGrantedServiceTicketQeury)
 		if err != nil {
@@ -76,7 +74,7 @@ var (
 		return err
 	}
 
-	// delete  granting ticeket relation
+	// delete  granting ticket relation
 	deleteGrantingTicket ticketAccessor = func(tx *sql.Tx, t *cashew.Ticket) error {
 		stmt, err := tx.Prepare(deleteGrantingTicketQeury)
 		if err != nil {

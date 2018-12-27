@@ -13,7 +13,9 @@ import (
 
 	"github.com/deadcheat/cashew/executor/expiration"
 	"github.com/deadcheat/cashew/foundation"
-	er "github.com/deadcheat/cashew/repository/expiration"
+	egr "github.com/deadcheat/cashew/repository/expiration/granting"
+	elr "github.com/deadcheat/cashew/repository/expiration/login"
+	esr "github.com/deadcheat/cashew/repository/expiration/service"
 	tr "github.com/deadcheat/cashew/repository/ticket"
 	uc "github.com/deadcheat/cashew/usecase/expiration"
 	"github.com/kawasin73/htask/cron"
@@ -34,9 +36,11 @@ func main() {
 	defer foundation.Authenticator().Close()
 	defer foundation.DB().Close()
 
-	ere := er.New(foundation.DB())
+	egre := egr.New(foundation.DB())
+	elre := elr.New(foundation.DB())
+	esre := esr.New(foundation.DB())
 	tre := tr.New(foundation.DB())
-	euc := uc.New(ere, tre)
+	euc := uc.New(egre, elre, esre, tre)
 	e := expiration.New(euc)
 
 	if runOnce {

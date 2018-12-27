@@ -27,6 +27,7 @@ import (
 	tu "github.com/deadcheat/cashew/usecase/ticket"
 	"github.com/deadcheat/cashew/usecase/validate"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -78,12 +79,14 @@ func main() {
 	statics := assets.New(r)
 	statics.Mount()
 
+	loggedRouter := handlers.LoggingHandler(os.Stdout, r)
+
 	// start cas server
 	bindAddress := fmt.Sprintf("%s:%d", foundation.App().Host, foundation.App().Port)
 	log.Println("start cas server on ", bindAddress)
 	server := &http.Server{
 		Addr:    bindAddress,
-		Handler: r,
+		Handler: loggedRouter,
 	}
 	go func() {
 		if foundation.App().UseSSL {

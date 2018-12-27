@@ -1,4 +1,4 @@
-package expiration
+package granting
 
 var (
 	selectByTimeoutTicketQuery = `SELECT
@@ -9,9 +9,6 @@ var (
   FROM tickets t 
     LEFT JOIN ticket_type tt ON t.id = tt.ticket_id 
     LEFT JOIN ticket_last_referenced tlr ON t.id = tlr.ticket_id 
-    LEFT JOIN ticket_username tu ON t.id = tu.ticket_id 
-    LEFT JOIN ticket_grant_ticket tgt ON t.id = tgt.destination_ticket_id 
-    LEFT JOIN tickets gt ON tgt.source_ticket_id = gt.id 
   WHERE
     tt.type IN( %s ) 
   AND (

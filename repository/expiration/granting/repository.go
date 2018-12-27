@@ -1,4 +1,4 @@
-package expiration
+package granting
 
 import (
 	"database/sql"
