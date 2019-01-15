@@ -59,7 +59,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 	// check renew and if renew, redirect to login page
 	renews := p[consts.ParamKeyRenew]
 	if hs.StringSliceContainsTrue(renews) {
-		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
+		err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show login page", http.StatusInternalServerError)
@@ -123,7 +123,7 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		log.Println("tgc not found ", err)
 	}
 	// display login page
-	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusFound)
+	err = d.showLoginPage(w, r, svc, false, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 	if err != nil {
 		log.Println(err)
 		http.Error(w, "failed to show login page", http.StatusInternalServerError)

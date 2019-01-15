@@ -31,6 +31,7 @@ func TestLoad(t *testing.T) {
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,
+		ExpirationCheckInterval: 30,
 		Database: &setting.Database{
 			Driver: "mysql",
 			Name:   "casdb",
@@ -83,9 +84,9 @@ func TestLoad(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf(`returned value check failed \n
-			expected: %#+v \n
-			actual  : %#+v \n
+		t.Errorf(`returned value check failed
+			expected: %#+v
+			actual  : %#+v
 		`, expected, actual)
 	}
 }
