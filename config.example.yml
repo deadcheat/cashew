@@ -10,6 +10,10 @@ ssl: false
 host: 127.0.0.1
 port: 3000
 
+### Organization Settings
+### you can specify who to authenticate user, this is shown on login-page
+organization: "Example Organization"
+
 ### GrantingDefaultExpire is seconds from last used for deletion ticket
 ### This value will be set as second.
 ### (T|P)GT will expires 7,200s (2 hour) as default.

@@ -27,6 +27,7 @@ func TestLoad(t *testing.T) {
 		SSLCertKey:              "",
 		Host:                    "localhost",
 		Port:                    3000,
+		Organization:            "Example",
 		URIPath:                 "/cas",
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
