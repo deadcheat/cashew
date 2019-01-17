@@ -14,6 +14,9 @@ type App struct {
 	Host        string `yaml:"host"`
 	Port        int    `yaml:"port"`
 
+	// Organization is who to authenticate user
+	Organization string `yaml:"organization"`
+
 	// ExpirationCheckInterval is a value of interval minute, used only in cashew-isolator
 	// cashew-isolator is checking expiration of each tickets and delete all of them
 	ExpirationCheckInterval int `yaml:"expiration_check_interval"`
