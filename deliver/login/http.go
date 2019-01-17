@@ -159,17 +159,18 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 		return
 	}
 	// FIXME parse process should be done when app start
-	t, err = t.Parse(string(f.Data))
+	t, _ = t.Parse(string(f.Data))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(sc)
 	return t.Execute(w, map[string]interface{}{
-		"Service":     service,
-		"LoginTicket": ltID,
-		"Messages":    messages,
-		"Errors":      errors,
-		"LoggedIn":    loggedIn,
-		"UserName":    username,
-		"Password":    password,
+		"Service":      service,
+		"Organization": foundation.App().Organization,
+		"LoginTicket":  ltID,
+		"Messages":     messages,
+		"Errors":       errors,
+		"LoggedIn":     loggedIn,
+		"UserName":     username,
+		"Password":     password,
 	})
 }
 
