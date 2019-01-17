@@ -6,7 +6,7 @@ import (
 	"github.com/deadcheat/goblet"
 )
 
-//go:generate goblet -o ./assets.go -p assets files
+//go:generate goblet -g -o assets.go -p assets files
 
 // Assets a generated file system
 var Assets = goblet.NewFS(
