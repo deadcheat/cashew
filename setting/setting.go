@@ -21,13 +21,18 @@ type App struct {
 	// cashew-isolator is checking expiration of each tickets and delete all of them
 	ExpirationCheckInterval int `yaml:"expiration_check_interval"`
 
-	// GrantingDefaultExpire is seconds from last used for deletion ticket
-	// This value will be set as second.
-	// (T|P)GT will expires 7,200s (2 hour) as default.
+	// LoginTicketExpire is seconds from created, used to delete expired ticket
+	// This value must to be set as second, integer
+	// As default, Login ticket will be expired in 300s(5 minutes)
+	LoginTicketExpire int `yaml:"login_expire"`
+
+	// GrantingDefaultExpire is seconds from last used, used to delete expired ticket
+	// This value should be set as second.
+	// (T|P)GT will be expired in 7,200s (2 hour) as default.
 	// If you want to use infinite expire policy, set 0
 	GrantingDefaultExpire int `yaml:"granting_default_expire"`
 
-	// Also, TGT will be timed-up in 28,800s (8 hour) from creation
+	// Also, TGT will be expired in 28,800s (8 hour) from creation
 	// This parameter also can be infinity when set 0
 	GrantingHardTimeout int `yaml:"granting_hard_timeout"`
 
@@ -128,6 +133,7 @@ var (
 		Port:                    3000,
 		URIPath:                 "",
 		ExpirationCheckInterval: 30,
+		LoginTicketExpire:       300,
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
 		TicketNumberOfEachUsers: 20,
