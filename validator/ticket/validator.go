@@ -28,6 +28,10 @@ func (p *v) Validate(t *cashew.Ticket) error {
 	// tickets will be expired in granting-default-expire-time(default: 8 hour) from the last time ticket has been referenced
 	// this is a rule for proxy granting ticket and ticket granting ticket
 	switch t.Type {
+	case cashew.TicketTypeLogin:
+		if t.LastReferencedAt != nil && now.After(t.LastReferencedAt.Add(time.Duration(foundation.App().LoginTicketExpire)*time.Second)) {
+			return errors.ErrTicketHasBeenExpired
+		}
 	case cashew.TicketTypeProxyGranting, cashew.TicketTypeTicketGranting:
 		if t.LastReferencedAt != nil && now.After(t.LastReferencedAt.Add(time.Duration(foundation.App().GrantingDefaultExpire)*time.Second)) {
 			return errors.ErrTicketHasBeenExpired
