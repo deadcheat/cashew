@@ -14,6 +14,11 @@ port: 3000
 ### you can specify who to authenticate user, this is shown on login-page
 organization: "Example Organization"
 
+### LoginTicketExpire is seconds from created, used to delete expired ticket
+### This value must to be set as second, integer
+### As default, Login ticket will be expired in 300s(5 minutes)
+login_expire: 7200
+
 ### GrantingDefaultExpire is seconds from last used for deletion ticket
 ### This value will be set as second.
 ### (T|P)GT will expires 7,200s (2 hour) as default.
