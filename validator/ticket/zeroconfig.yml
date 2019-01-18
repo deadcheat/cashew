@@ -1,0 +1,12 @@
+login_expire: 300
+granting_default_expire: 0
+granting_hard_timeout: 0
+
+database:
+  driver: mysql
+
+authenticator:
+  driver: database
+  dbauth:
+    database:
+      driver: mysql

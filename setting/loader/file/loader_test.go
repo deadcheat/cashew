@@ -16,7 +16,7 @@ func TestNew(t *testing.T) {
 }
 
 var (
-	fileName      = "config.yml"
+	fileName      = "testconfig.yml"
 	errorFileName = "config.error.yml"
 )
 
