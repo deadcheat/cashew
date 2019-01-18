@@ -31,6 +31,7 @@ func TestLoad(t *testing.T) {
 		URIPath:                 "/cas",
 		GrantingDefaultExpire:   7200,
 		GrantingHardTimeout:     28800,
+		LoginTicketExpire:       300,
 		TicketNumberOfEachUsers: 20,
 		ExpirationCheckInterval: 30,
 		Database: &setting.Database{
