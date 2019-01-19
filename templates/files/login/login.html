@@ -15,17 +15,18 @@
 <body onload="if
         (document.getElementById('username')) document.getElementById('username').focus()">
     <section class="hero is-success is-fullheight">
-        {{ range $m := .Messages }}
+        {{ if .Messages }}
         <article class="message is-primary">
             <div class="message-header">
                 <p>Message</p>
                 <button class="delete" aria-label="delete"></button>
             </div>
+            {{ range $m := .Messages }}
             <div class="message-body">
                 {{ $m }}
-            </div>
+            </div>{{ end }}
         </article>
-        <br /> {{ end }} {{ range $m := .Errors }}
+        <br />{{ end }} {{ range $m := .Errors }}
         <article class="message is-danger">
             <div class="message-header">
                 <p>Error</p>
