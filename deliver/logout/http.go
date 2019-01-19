@@ -46,15 +46,12 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	if svc != nil {
 		service = svc.String()
 	}
-	ltID := ""
-	if !loggedIn {
-		var lt *cashew.Ticket
-		lt, err = d.tuc.NewLogin(r)
-		if err != nil {
-			return
-		}
-		ltID = lt.ID
+	var lt *cashew.Ticket
+	lt, err = d.tuc.NewLogin(r)
+	if err != nil {
+		return
 	}
+	ltID := lt.ID
 	t := template.New("cas logout").Funcs(vh.FuncMap)
 	var f *goblet.File
 	f, err = templates.Assets.File("/files/login/index.html")
