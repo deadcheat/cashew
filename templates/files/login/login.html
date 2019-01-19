@@ -12,7 +12,7 @@
     <link rel=" stylesheet" href="{{ parseURI "/assets/css/base.css" }}" />
 </head>
 
-<body onload=" if
+<body onload="if
         (document.getElementById('username')) document.getElementById('username').focus()">
     <section class="hero is-success is-fullheight">
         {{ range $m := .Messages }}
@@ -37,7 +37,6 @@
         </article><br /> {{ end }}
         <div class="hero-body">
             <div class="container has-text-centered">
-                {{ if not .LoggedIn }}
                 <div class="column is-4 is-offset-4">
                     <h3 class="title has-text-grey">{{.Organization}} Central Authentication Service Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
@@ -56,19 +55,19 @@
                                         tabindex="2" accesskey="p" autocomplete="off" value="{{ .Password }}">
                                 </div>
                             </div>
+                            <!-- this checkbox does not work yet
                             <div class="field">
                                 <label class="checkbox">
                                     <input type="checkbox"> Remember me
                                 </label>
                             </div>
+                            -->
                             <input type="hidden" name="lt" value="{{ .LoginTicket }}">
                             <input type="hidden" name="service" value="{{ .Service }}">
                             <button class="button is-block is-info is-large is-fullwidth">Login</button>
                         </form>
                     </div>
                 </div>
-                {{ else }}
-                <img src="{{ parseURI "/assets/images/success.jpg" }}" alt=""> {{ end }}
             </div>
         </div>
     </section>
