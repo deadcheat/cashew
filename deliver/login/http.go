@@ -21,6 +21,7 @@ import (
 	vh "github.com/deadcheat/cashew/helpers/view"
 	"github.com/deadcheat/cashew/provider/message"
 	"github.com/deadcheat/cashew/templates"
+	"github.com/deadcheat/cashew/timer"
 	"github.com/deadcheat/cashew/values/consts"
 
 	"github.com/gorilla/mux"
@@ -266,11 +267,17 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// set cookie
-	http.SetCookie(w, &http.Cookie{
+	tgtCookie := &http.Cookie{
 		Name:  consts.CookieKeyTGT,
 		Value: tgt.ID,
 		Path:  filepath.Join("/", foundation.App().URIPath),
-	})
+	}
+
+	gde := foundation.App().GrantingDefaultExpire
+	if gde > 0 {
+		tgtCookie.Expires = timer.Local.Now().Add(time.Duration(gde) * time.Second)
+	}
+	http.SetCookie(w, tgtCookie)
 
 	var st *cashew.Ticket
 	st, err = d.tuc.NewService(r, svc, tgt, true)
