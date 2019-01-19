@@ -6,30 +6,32 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Login - {{.Organization}} Central Authentication Service</title>
+    <script src="{{ parseURI "/assets/js/cashew.js" }}"></script>
     <link rel="stylesheet" href="{{ parseURI "/assets/css/font-awesome.min.css" }}">
     <!-- Bulma Version 0.7.1-->
     <link rel="stylesheet" href="{{ parseURI "/assets/css/bulma.min.css" }}" />
     <link rel=" stylesheet" href="{{ parseURI "/assets/css/base.css" }}" />
 </head>
 
-<body onload=" if
+<body onload="if
         (document.getElementById('username')) document.getElementById('username').focus()">
     <section class="hero is-success is-fullheight">
-        {{ range $m := .Messages }}
-        <article class="message is-primary">
+        {{ if .Messages }}
+        <article id="messageArea" class="message is-primary">
             <div class="message-header">
                 <p>Message</p>
-                <button class="delete" aria-label="delete"></button>
+                <button class="delete" aria-label="delete" onclick="hide('messageArea');"></button>
             </div>
+            {{ range $m := .Messages }}
             <div class="message-body">
                 {{ $m }}
-            </div>
+            </div>{{ end }}
         </article>
-        <br /> {{ end }} {{ range $m := .Errors }}
-        <article class="message is-danger">
+        <br />{{ end }} {{ range $m := .Errors }}
+        <article id="errorArea" class="message is-danger">
             <div class="message-header">
                 <p>Error</p>
-                <button class="delete" aria-label="delete"></button>
+                <button class="delete" aria-label="delete" onclick="hide('errorArea');"></button>
             </div>
             <div class="message-body">
                 {{ $m }}
@@ -37,7 +39,6 @@
         </article><br /> {{ end }}
         <div class="hero-body">
             <div class="container has-text-centered">
-                {{ if not .LoggedIn }}
                 <div class="column is-4 is-offset-4">
                     <h3 class="title has-text-grey">{{.Organization}} Central Authentication Service Login</h3>
                     <p class="subtitle has-text-grey">Please login to proceed.</p>
@@ -56,19 +57,19 @@
                                         tabindex="2" accesskey="p" autocomplete="off" value="{{ .Password }}">
                                 </div>
                             </div>
+                            <!-- this checkbox does not work yet
                             <div class="field">
                                 <label class="checkbox">
                                     <input type="checkbox"> Remember me
                                 </label>
                             </div>
+                            -->
                             <input type="hidden" name="lt" value="{{ .LoginTicket }}">
                             <input type="hidden" name="service" value="{{ .Service }}">
                             <button class="button is-block is-info is-large is-fullwidth">Login</button>
                         </form>
                     </div>
                 </div>
-                {{ else }}
-                <img src="{{ parseURI "/assets/images/success.jpg" }}" alt=""> {{ end }}
             </div>
         </div>
     </section>

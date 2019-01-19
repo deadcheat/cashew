@@ -90,7 +90,8 @@ func (d *Deliver) get(w http.ResponseWriter, r *http.Request) {
 		case err == nil:
 			if svc == nil {
 				log.Println("already logged in and no service detected")
-				mp.AddInfo("you're already logged in and you didn't set an url to be redirected")
+				mp.AddInfo("you didn't set an url to be redirected.")
+				mp.AddInfo(fmt.Sprintf("you're already logged in as %s. If this user is not you, please re-login.", tgt.UserName))
 				err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
 				if err != nil {
 					log.Println(err)
@@ -143,18 +144,15 @@ func (d Deliver) showLoginPage(w http.ResponseWriter, r *http.Request, svc *url.
 	if svc != nil {
 		service = svc.String()
 	}
-	ltID := ""
-	if !loggedIn {
-		var lt *cashew.Ticket
-		lt, err = d.tuc.NewLogin(r)
-		if err != nil {
-			return
-		}
-		ltID = lt.ID
+	var lt *cashew.Ticket
+	lt, err = d.tuc.NewLogin(r)
+	if err != nil {
+		return
 	}
+	ltID := lt.ID
 	t := template.New("cas login").Funcs(vh.FuncMap)
 	var f *goblet.File
-	f, err = templates.Assets.File("/files/login/index.html")
+	f, err = templates.Assets.File("/files/login/login.html")
 	if err != nil {
 		return
 	}
