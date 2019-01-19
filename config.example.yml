@@ -27,11 +27,6 @@ granting_default_expire: 7200
 # Also, TGT will be timed-up in 28,800s (8 hour) from creation
 granting_hard_timeout: 28800
 
-### TicketNumberOfEachUsers is a threshold of tickets that users are allowed to create
-### This parameter is enabled only on ST/PT
-### Default value is 20
-ticket_number_of_each_users: 20
-
 ### specify uri_path if you want to change the root path
 ### cas server will be served
 # uri_path: /cas
@@ -45,6 +40,11 @@ ticket_number_of_each_users: 20
 #   pass: password
 #   host: localhost
 #   port: 3306
+#   parameters:
+#     parseTime: true
+#     loc:       Asia/Tokyo
+#     charset:   utf8mb4,utf8
+#     collation: utf8mb4_bin
 
 ### Authenticator Setting
 # authenticator:
@@ -73,8 +73,3 @@ ticket_number_of_each_users: 20
 #       - name: user_age
 #         column_name: age
 
-### Log Setting
-### NOTE: This doesn't work correctly yet.
-# logging:
-#   driver: stdout
-#   level: debug
