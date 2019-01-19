@@ -48,3 +48,7 @@ p {
 p.subtitle {
     padding-top: 1rem;
 }
+
+.is-hidden {
+  display: none;
+}
