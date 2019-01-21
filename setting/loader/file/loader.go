@@ -18,14 +18,14 @@ func New() setting.Loader {
 
 // Load load from file identified by filepath
 func (l *Loader) Load(id string) (a *setting.App, err error) {
-	file, err := os.Open(id)
+	f, err := os.Open(id)
 	if err != nil {
 		return nil, err
 	}
-	defer file.Close()
+	defer f.Close()
 
 	// ioutil.ReadAll may not return error when file exists
-	b, _ := ioutil.ReadAll(file)
+	b, _ := ioutil.ReadAll(f)
 	sc := setting.DefaultSetting
 	a = &sc
 	if err := yaml.Unmarshal(b, a); err != nil {
