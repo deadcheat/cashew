@@ -209,7 +209,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
-		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
+		mp.AddErr("failed to find login ticket or login ticket will be expired")
+		dispError := d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusOK)
+		if dispError != nil {
+			log.Println(dispError)
+			http.Error(w, "failed to show page", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 	// delete login ticket
@@ -225,7 +231,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 	if err = d.vuc.ValidateLogin(lt); err != nil {
 		// FIXME redirect to /login with service url
 		log.Println(err)
-		http.Error(w, "failed to find login ticket", http.StatusBadRequest)
+		mp.AddErr("failed to find login ticket or login ticket will be expired")
+		dispError := d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusOK)
+		if dispError != nil {
+			log.Println(dispError)
+			http.Error(w, "failed to show page", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -286,7 +298,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		break
 	case errors.ErrNoServiceDetected:
 		mp.AddInfo("you're successfully authenticated but no service param was given and we can't redirect anymore ")
-		err = d.showLoginPage(w, r, svc, true, "", "", mp.Info(), mp.Errors(), http.StatusOK)
+		err = d.showLoginPage(w, r, svc, true, u, "", mp.Info(), mp.Errors(), http.StatusOK)
 		if err != nil {
 			log.Println(err)
 			http.Error(w, "failed to show page", http.StatusInternalServerError)
@@ -295,8 +307,13 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 		return
 	default:
 		log.Println(err)
-		// FIXME to show error message to loginpage
-		http.Error(w, "failed to issue ticket granting ticket", http.StatusInternalServerError)
+		mp.AddErr("failed to issue ticket granting ticket " + err.Error())
+		err = d.showLoginPage(w, r, svc, false, u, pa, mp.Info(), mp.Errors(), http.StatusOK)
+		if err != nil {
+			log.Println(err)
+			http.Error(w, "failed to show page", http.StatusInternalServerError)
+			return
+		}
 		return
 	}
 
@@ -310,7 +327,7 @@ func (d *Deliver) post(w http.ResponseWriter, r *http.Request) {
 // index handle get method request to /
 func (d *Deliver) index(w http.ResponseWriter, r *http.Request) {
 	u := r.URL
-	u.Path = "/login"
+	u.Path = u.Path + "login"
 	cs := r.Cookies()
 	for i := range cs {
 		http.SetCookie(w, cs[i])
